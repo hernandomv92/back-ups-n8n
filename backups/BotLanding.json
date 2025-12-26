@@ -1,0 +1,452 @@
+{
+  "updatedAt": "2025-09-21T19:43:06.000Z",
+  "createdAt": "2025-09-21T18:50:08.166Z",
+  "id": "5jacWOex0nWyc2db",
+  "name": "BotLanding",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "63566525-58bb-474e-b363-f218f196cd15",
+              "name": "mensaje",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2416,
+        0
+      ],
+      "id": "b7577bd9-1492-40de-90ec-081909732703",
+      "name": "setCampos"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.sender }}",
+        "value": "=={{ JSON.stringify({  message: $json.mensaje,  sessionID: $json.session_id,  ts: $json.mensaje_timestamp}) }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2048,
+        -32
+      ],
+      "id": "22fee2ac-1a6f-47e6-8c29-96a99a24b1cf",
+      "name": "pushRedis",
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Mensaje",
+        "key": "={{ $json.sender }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -32
+      ],
+      "id": "90b0ed27-d9f8-4cf0-ac4f-85a67633bb51",
+      "name": "bufferRedis",
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "=={{ \n  (\n    (Array.isArray($json.Mensaje) ? $json.Mensaje : [])\n      .filter(m => typeof m === 'string' && m.trim().startsWith('{'))\n      .map(m => { try { return JSON.parse(m).sessionID } catch (e) { return '' } })\n      .filter(Boolean)\n      .slice(-1)[0] || ''\n  )\n}}\n",
+                    "rightValue": "=={{ \n  $if($('setCampos').isExecuted, String($('setCampos').item.json.session_id).trim(),\n      String($node[\"ReciboMensaje\"].json.body.data.key.id || '').trim())\n}}\n",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "32e04eaa-4bba-40bf-ac35-cced1e2670cc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ignorar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9422693f-2f00-4ff1-8370-b7f5aea4836d",
+                    "leftValue": "=={{ \n  DateTime.fromISO(\n    (\n      (Array.isArray($json.Mensaje) ? $json.Mensaje : [])\n        .filter(m => typeof m === 'string' && m.trim().startsWith('{'))\n        .map(m => { try { return JSON.parse(m).ts } catch (e) { return '' } })\n        .filter(Boolean)\n        .slice(-1)[0] || ''\n    )\n  )\n}}\n",
+                    "rightValue": "={{ $now.minus(7, 'seconds').toLocal() }}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "before"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Continuar"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Esperar"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1600,
+        -144
+      ],
+      "id": "aeb1fe42-b046-4084-a4c4-f36d7329b01f",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 7
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1376,
+        64
+      ],
+      "id": "2b89a3f7-d29f-4eee-ace7-6fd4baef69fe",
+      "name": "Wait",
+      "webhookId": "2ff23ec4-b8c8-4b4d-a341-1fa020c42d04",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=={{ \n  $if($('setCampos').isExecuted, $('setCampos').item.json.sender,\n      $if($('ExtraerDatosAudio').isExecuted, $('ExtraerDatosAudio').item.json.sender,\n          $node[\"ReciboMensaje\"].json.body.data.key.remoteJid))\n}}\n"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -128
+      ],
+      "id": "1d5edd1e-bd0e-4da5-9fc6-dcf774a1bac7",
+      "name": "borrarRedis",
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ac1d451f-c2bc-438e-9c1c-c9a3d69eed7f",
+              "name": "mensaje",
+              "value": "=={{ \n  [\n    // Historial de Redis (array seguro)\n    ...(\n      (Array.isArray($json.Mensaje) ? $json.Mensaje : [])\n        .filter(m => typeof m === 'string' && m.trim().startsWith('{'))\n        .map(m => { try { return JSON.parse(m).message } catch (e) { return '' } })\n        .filter(Boolean)\n    ),\n    // Transcripción (si existe)\n    (typeof $json.text === 'string' && $json.text.trim())\n      ? `🎙️ Audio: ${$json.text.trim()}`\n      : ''\n  ]\n  .filter(Boolean)\n  .join('\\n')\n}}\n",
+              "type": "string"
+            },
+            {
+              "id": "eef91cc7-0190-4f75-b616-722a58fce03e",
+              "name": "sender",
+              "value": "=={{ \n  $json.sender \n  || $if($('setCampos').isExecuted, $('setCampos').item.json.sender,\n       $if($('ExtraerDatosAudio').isExecuted, $('ExtraerDatosAudio').item.json.sender,\n           $node[\"ReciboMensaje\"].json.body.data.key.remoteJid))\n}}\n",
+              "type": "string"
+            },
+            {
+              "id": "d83bff84-a47b-47a7-a137-e7c1ed14ab5a",
+              "name": "Instancia",
+              "value": "=={{ \n  $json.Instancia \n  || $if($('setCampos').isExecuted, $('setCampos').item.json.Instancia,\n       $if($('ExtraerDatosAudio').isExecuted, $('ExtraerDatosAudio').item.json.Instancia,\n           $node[\"ReciboMensaje\"].json.body.instance))\n}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        -128
+      ],
+      "id": "0961d0e2-8a85-4185-b602-55f0f152a08d",
+      "name": "concatenarMensaje",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ \n  Array.from(new Set(\n    [\n      ...(\n        ($json.Mensaje || [])\n          .filter(m => m && m.trim().startsWith('{'))\n          .map(m => JSON.parse(m).message)\n          .filter(Boolean)\n      ),\n      ($json.text || '').trim()\n    ].filter(Boolean)\n  )).join('\\n')\n}}\n",
+        "options": {
+          "systemMessage": "=System Prompt – Agente Callao\nRol del Asistente\n\nEres el asistente de Callao, discoteca en Cali.\nRespondes con tono caleño, cercano y buena vibra; tuteas, escribes claro y directo, y puedes usar 1–2 emojis por mensaje (sin exceso).\n\nEstilo y Formato (WhatsApp)\n\nMáximo 3 líneas cuando sea posible.\n\nUsa énfasis con negritas y listas con “- ” para que se vea ordenado.\n\nEmojis permitidos: 🎉✨🍹🕺💃📍⏰🔗⚠️\n\nSi falta info clave, pide un dato a la vez (fecha, hora, # de personas).\n\nNo prometas espacios/tiempos: el ingreso es por orden de llegada.\n\nDatos Operativos\n\nLink de reservas: https://menupp.co/callao\n 🔗 ← reemplazar por la URL real.\n\nPrecios de cover (COP):\n\nGeneral: $25.000\n\nPreferencial: $35.000\n\nVIP: $50.000\n(Pueden variar en eventos especiales.)\n\nPreguntas Frecuentes\nReservas\n\nDisparadores: “reserva”, “reservar”, “mesa”, “link”, “cómo aparto”.\n\nRespuesta base (breve):\n“¡De una! Haz tu reserva aquí 👉 https://menupp.co/callao\n 🔗. Si quieres te ayudo: dime fecha, hora y cuántos son. ✨”\n\nRespuesta organizada:\n“¡Listo! Te dejo la info:\n\nReservas: https://menupp.co/callao\n 🔗\n\n¿Qué necesito? Fecha, hora y # de personas.\n\nNota: Asignación de espacios según llegada.”\n\nPrecios del cover\n\nDisparadores: “cover”, “cuánto vale entrar”, “precio entrada”.\n\nRespuesta base (breve):\n“Te cuento: General $25.000, Preferencial $35.000, VIP $50.000. 📍Puede variar en eventos. ¿Para qué día lo miras? 🎉”\n\nRespuesta organizada:\n“Precios de cover:\n\nGeneral: $25.000\n\nPreferencial: $35.000\n\nVIP: $50.000\nPueden cambiar si hay evento especial.”\n\nDisponibilidad para hoy\n\nDisparadores: “¿hay cupo hoy?”, “¿puedo ir hoy?”, “¿hay espacio?”, \"tienen mesas disponibles\".\n\nRespuesta base (breve):\n“Sí, tenemos disponibilidad para hoy 🙌. Ojo: no podemos garantizar espacio si te demoras, el ingreso es por orden de llegada. ¿A qué hora te caes? ⏰”\n\nRespuesta organizada:\n“Para hoy:\n\nDisponibilidad: Sí\n\nIngreso: Orden de llegada (no se garantiza espacio si llegas tarde).\n\nSugerencia: llegar temprano o reservar 👉 https://menupp.co/callao”\n\nConsulta de Precios de Licores\n\nSi el usuario pregunta por un licor (ej: “¿cuánto vale Don Julio?”, “precio del Centenario?”, “qué tienen de tequila”), primero revisa la hoja de Google Sheets Precios_de_Licores_Organizados.\n\nLa hoja tiene columnas: Categoría, Producto, Presentación, Precio.\n\nDevuelve siempre el resultado encontrado con este formato:\n\n“Precios de [Producto]:\n\nTrago: $XX.XXX\n\nBotella: $XXX.XXX 🍹✨”\n\nSi hay varias presentaciones (trago y botella), muéstralas todas en lista.\n\nSi el producto no aparece en la hoja, responde:\n“No lo tengo en lista 📋. ¿Quieres que te comparta otro parecido?”\n\nEjemplo de respuesta:\n“Precios de Don Julio 1942:\n\nTrago: $61.000\n\nBotella: $1.950.000 🍹✨”\n\nEjemplos (tono caleño y formato)\n\nReserva (rápido):\n“¡Claro que sí! 👉 https://menupp.co/callao\n. Dime fecha, hora y cuántos son y te ayudo de una. ✨”\n\nCover (organizado):\n“Precios de cover:\n\nGeneral: $25.000\n\nPreferencial: $35.000\n\nVIP: $50.000\nPueden variar en eventos especiales. ¿Para qué día lo miras? 🎉”\n\nHoy hay cupo:\n“Sí hay cupo hoy 🙌. No garantizamos espacio si te demoras porque es por orden de llegada. Si prefieres asegurar, reserva aquí: https://menupp.co/callao.”\n\nPolíticas\n\nNo confirmes “mesa fija” ni “cupos garantizados” por chat.\n\nNo uses lenguaje grosero; mantén la vibra caleña, cercana y respetuosa."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -880,
+        -128
+      ],
+      "id": "f7752b51-d2c2-4121-a62a-3f9b46bb0f6b",
+      "name": "AI Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -928,
+        96
+      ],
+      "id": "f2a10123-7318-4156-b67b-66ab026cce5f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ ($json.sender || '') + '::' + ($json.Instancia || '') }}\n",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        96
+      ],
+      "id": "4e650a53-2fef-41d6-9dca-7ff01b902290",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -320
+      ],
+      "id": "e081c42b-d9f5-49a5-89f1-50454dcae5e9",
+      "name": "sinAccion",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d1d0e0b9-63b6-4466-bcfd-4c8237844c4d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2656,
+        0
+      ],
+      "id": "4f16bc92-5ca6-4983-b100-ff2f6ed60200",
+      "name": "ReciboMensaje",
+      "webhookId": "d1d0e0b9-63b6-4466-bcfd-4c8237844c4d"
+    }
+  ],
+  "connections": {
+    "setCampos": {
+      "main": [
+        []
+      ]
+    },
+    "pushRedis": {
+      "main": [
+        [
+          {
+            "node": "bufferRedis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "bufferRedis": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "sinAccion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "borrarRedis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "bufferRedis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "borrarRedis": {
+      "main": [
+        [
+          {
+            "node": "concatenarMensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "concatenarMensaje": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReciboMensaje": {
+      "main": [
+        [
+          {
+            "node": "setCampos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e0310ee1-ce4f-4211-8283-851fdf7378f2",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-09-21T18:50:08.184Z",
+      "createdAt": "2025-09-21T18:50:08.184Z",
+      "role": "workflow:owner",
+      "workflowId": "5jacWOex0nWyc2db",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
