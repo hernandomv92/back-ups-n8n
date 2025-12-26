@@ -1,0 +1,73 @@
+{
+  "updatedAt": "2025-10-04T17:12:28.000Z",
+  "createdAt": "2025-10-04T12:26:21.842Z",
+  "id": "DdkMoBHCnWCtYqWj",
+  "name": "Jobber",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b90aa5ab-4195-4e64-88fe-dd7a4977a151",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "query": "=mutation JobCreate {\n  jobCreate(\n    input: {\n      clientId: \"Z2lkOi8vSm9iYmVyL0NsaWVudC8xMTk5MDYxNDY=\"\n      title: \"Trabajo prueba n8n\"\n      instructions: \"Probando creación básica desde n8n\"\n      lineItems: [\n        {\n          description: \"Servicio básico\"\n          quantity: 1\n          unitPrice: 50.00\n        }\n      ]\n      status: ACTIVE\n    }\n  ) {\n    job {\n      id\n      jobNumber\n      title\n      status\n    }\n    userErrors {\n      message\n      path\n    }\n  }\n}\n"
+      },
+      "type": "@kobami/n8n-nodes-jobber.jobber",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "72dec43b-08ce-4afe-a26c-88a94f71ed81",
+      "name": "Jobber",
+      "credentials": {
+        "jobberOAuth2Api": {
+          "id": "Y6HWTzEoz2eH9j2H",
+          "name": "Jobber account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Jobber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "efa3a759-8b74-49c0-a1b0-d8521403ef1a",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-04T12:26:21.846Z",
+      "createdAt": "2025-10-04T12:26:21.846Z",
+      "role": "workflow:owner",
+      "workflowId": "DdkMoBHCnWCtYqWj",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
