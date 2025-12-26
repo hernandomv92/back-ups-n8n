@@ -1,0 +1,627 @@
+{
+  "updatedAt": "2025-09-27T16:01:48.000Z",
+  "createdAt": "2025-09-27T10:59:38.663Z",
+  "id": "GNhqcDZxvFlfybrW",
+  "name": "Clasificador de Mails Nandov1",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputText": "={{ $json.subject }}{{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "lotes",
+              "description": "El correo contiene información sobre un lote que está en venta"
+            },
+            {
+              "category": "soporte",
+              "description": "Solicitud de ayuda técnica o guía resolver un problema"
+            },
+            {
+              "category": "cotizaciones",
+              "description": "El correo solicita información sobre el valor de un trabajo a realiar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        96
+      ],
+      "id": "b65ca77c-ebe8-4446-a8a1-de0ea7c06171",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        352
+      ],
+      "id": "9503c030-c4e0-4ef9-974c-96c24640e667",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        96
+      ],
+      "id": "44d6f807-8035-462a-a461-05c4416749c4",
+      "name": "GmailEntrada",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_5044593316295632025"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        -80
+      ],
+      "id": "294850a0-88d6-4a55-b6d6-0758c2fb2cfe",
+      "name": "Enviar a Lotes",
+      "webhookId": "9b4c338e-cbf0-4fad-8f96-1196b45c5aec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_1919817281264336827"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        144
+      ],
+      "id": "a252a31b-b1b2-42fa-a440-6d450cd31d2f",
+      "name": "Enviar a Soporte",
+      "webhookId": "9b4c338e-cbf0-4fad-8f96-1196b45c5aec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_5467081070307164086"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        384
+      ],
+      "id": "a87c5af9-28a7-4fa3-b155-b07872fc7aac",
+      "name": "Enviar a cotizaciones",
+      "webhookId": "9b4c338e-cbf0-4fad-8f96-1196b45c5aec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Entrada de correos electrónicos.",
+        "height": 352,
+        "width": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "59de2b5e-4d88-4c94-a5fb-c6bc34b78b4d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Clasificador de intención de correo electrónico.\nAquí en agente entiende qué intención tiene el correo y lo reenvia al cambio de etiquieta para organizarlo en el correo",
+        "height": 752,
+        "width": 352,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "069ba1e1-590d-4164-a786-274a3650bc67",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "MOver en bandeja de entrada a el lugar que corresponde por etiquieta.",
+        "height": 1072,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "b09a6795-fdf1-412d-89f4-30dc57089202",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "2fb8f425-290b-4a80-97ad-296273bff219",
+      "name": "Get a message",
+      "webhookId": "c9825016-7187-4e72-878e-fc25c40f0f5a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function: Extract HTML/Text robusto para Gmail \"Get a message\"\n// Soporta: salida simplificada (html/text) y salida cruda (payload.parts base64)\n\nconst msg = $json;\n\nfunction b64urlDecode(str) {\n  return Buffer.from(str.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');\n}\nfunction findPart(parts, mimeStartsWith) {\n  if (!parts) return null;\n  for (const p of parts) {\n    if (p.mimeType?.startsWith(mimeStartsWith) && p.body?.data) return p.body.data;\n    const inner = findPart(p.parts, mimeStartsWith);\n    if (inner) return inner;\n  }\n  return null;\n}\nfunction headerLookup(headers, name) {\n  if (!headers) return null;\n  const nameLc = name.toLowerCase();\n  if (Array.isArray(headers)) {\n    const h = headers.find(h => (h.name || '').toLowerCase() === nameLc);\n    return h ? h.value : null;\n  }\n  if (typeof headers === 'object') {\n    const key = Object.keys(headers).find(k => k.toLowerCase() === nameLc);\n    return key ? headers[key] : null;\n  }\n  return null;\n}\n\n// 1) Intentar campos de salida simplificada\nlet html =\n  msg.html ||\n  msg.textHtml ||\n  msg.textAsHtml ||\n  null;\n\nlet text =\n  msg.text ||\n  msg.textPlain ||\n  msg.plainText ||\n  null;\n\n// 2) Si no hay, intentar salida cruda (payload/body/parts)\nif (!html) {\n  if (msg.payload?.mimeType?.includes('text/html') && msg.payload?.body?.data) {\n    html = b64urlDecode(msg.payload.body.data);\n  } else {\n    const htmlB64 = findPart(msg.payload?.parts, 'text/html');\n    if (htmlB64) html = b64urlDecode(htmlB64);\n  }\n}\nif (!text) {\n  if (msg.payload?.mimeType === 'text/plain' && msg.payload?.body?.data) {\n    text = b64urlDecode(msg.payload.body.data);\n  } else {\n    const textB64 = findPart(msg.payload?.parts, 'text/plain');\n    if (textB64) text = b64urlDecode(textB64);\n  }\n}\n\n// 3) Fallback: derivar texto desde HTML\nif (!text && html) {\n  text = html\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// 4) Metadatos útiles\nconst subject =\n  msg.subject ||\n  headerLookup(msg.headers, 'subject') ||\n  null;\n\nconst from =\n  (msg.from?.value?.[0]?.address) ||\n  (typeof msg.from === 'string' ? msg.from : null) ||\n  headerLookup(msg.headers, 'from') ||\n  null;\n\nconst to =\n  (msg.to?.value?.[0]?.address) ||\n  (typeof msg.to === 'string' ? msg.to : null) ||\n  headerLookup(msg.headers, 'to') ||\n  null;\n\nconst messageIdHeader =\n  headerLookup(msg.headers, 'message-id') ||\n  headerLookup(msg.headers, 'message-id') ||\n  null;\n\nreturn [{\n  html: html ?? null,\n  text: text ?? null,\n  subject,\n  from,\n  to,\n  gmailId: msg.id ?? null,          // ID interno de Gmail\n  messageId: messageIdHeader ?? null // Header Message-ID\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -80
+      ],
+      "id": "0493d5f1-8a6a-479c-bcf1-f916ba1fc667",
+      "name": "Extract HTML"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Extrae campos de un correo sobre venta de lote. \nResponde exclusivamente un JSON válido con estas claves:\n\n{\n  \"precio\": {\"value\": number, \"currency\": \"USD|COP|...\"},\n  \"tamano\": {\"value\": number, \"unit\": \"m2|ha|acres|...\"},\n  \"ubicacion\": string,\n  \"fuente_message_id\": string\n}\n\n- Convierte \"100k\" → 100000.\n- Normaliza hectáreas/m2/acres.\n- Si falta algún dato, usa null.\n- No devuelvas texto explicativo, solo el JSON.\n",
+              "role": "system"
+            },
+            {
+              "content": "=CORREO:\n{{ $json.text || $json.html }}\n\nINSTRUCCIONES:\n- fuente_message_id = {{ $json.messageId }}\n- Responde SOLO el JSON.\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1616,
+        -80
+      ],
+      "id": "31f9bed1-f99b-49d7-b2db-4a85ebf8eb1f",
+      "name": "AI Extract JSON",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6405e6bb-16eb-4d31-b84b-99f18751a212",
+              "name": "precio",
+              "value": "={{ $json.message.content.precio.value }}",
+              "type": "number"
+            },
+            {
+              "id": "3162d577-3cf1-4428-a62f-0002e59ac649",
+              "name": "currency",
+              "value": "={{ $json.message.content.precio.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "f703bc9c-151a-4722-80dc-399be083eb82",
+              "name": "tamaño",
+              "value": "={{ $json.message.content.tamano.value }}",
+              "type": "number"
+            },
+            {
+              "id": "b3c7b487-f547-4191-b435-b74b13459119",
+              "name": "unidad",
+              "value": "={{ $json.message.content.tamano.unit }}",
+              "type": "string"
+            },
+            {
+              "id": "d25dfe4d-3a7e-47ae-9bb3-acfc45a29313",
+              "name": "ubicacion",
+              "value": "={{ $json.message.content.ubicacion }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1968,
+        -80
+      ],
+      "id": "8d263910-31f2-4ac7-95d3-c83ce517fe08",
+      "name": "Normalizar"
+    },
+    {
+      "parameters": {
+        "content": "Extraer contenido del correo Electrónico",
+        "height": 576,
+        "width": 736,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1152,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "05301087-2d6a-460f-9a03-68ea01eccf72",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Normalizar contenido en formato para que reciba la hoja de calculo",
+        "height": 544,
+        "width": 224,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1904,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "e75cc0bd-fdf3-4801-a366-6dea6162b7fa",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Actualizar nuestra hoja de Cálculo",
+        "height": 432,
+        "width": 288,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2144,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "e246b5b5-998e-4eee-9c2c-b3be1778239a",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU",
+          "mode": "list",
+          "cachedResultName": "lotes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lotes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "precio": "={{ $json.precio }}",
+            "currency": "={{ $json.currency }}",
+            "tamaño": "={{ $json['tamaño'] }}",
+            "unidad": "={{ $json.unidad }}",
+            "ubicación": "={{ $json.ubicacion }}"
+          },
+          "matchingColumns": [
+            "precio"
+          ],
+          "schema": [
+            {
+              "id": "precio",
+              "displayName": "precio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tamaño",
+              "displayName": "tamaño",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unidad",
+              "displayName": "unidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ubicación",
+              "displayName": "ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2160,
+        -80
+      ],
+      "id": "c7b191fc-1118-44b0-8a13-042d0f144735",
+      "name": "ActualizaciónLotes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NI3t90GmXQIkFt1q",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GmailEntrada": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Enviar a Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar a Soporte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar a cotizaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a Lotes": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a Soporte": {
+      "main": [
+        []
+      ]
+    },
+    "Enviar a cotizaciones": {
+      "main": [
+        []
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Extract HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract HTML": {
+      "main": [
+        [
+          {
+            "node": "AI Extract JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extract JSON": {
+      "main": [
+        [
+          {
+            "node": "Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar": {
+      "main": [
+        [
+          {
+            "node": "ActualizaciónLotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "adc8d707-b78b-476e-9468-404f1c2f0868",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-09-27T10:59:38.665Z",
+      "createdAt": "2025-09-27T10:59:38.665Z",
+      "role": "workflow:owner",
+      "workflowId": "GNhqcDZxvFlfybrW",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
