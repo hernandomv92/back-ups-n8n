@@ -1,0 +1,902 @@
+{
+  "updatedAt": "2025-09-28T03:16:12.000Z",
+  "createdAt": "2025-09-27T17:13:16.600Z",
+  "id": "5YrevSTMcdKyGhgf",
+  "name": "Clasificador de Mails Nandov2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputText": "={{ $json.subject }}{{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "lotes",
+              "description": "El correo contiene información sobre un lote que está en venta puede ser información en inglés. "
+            },
+            {
+              "category": "soporte",
+              "description": "Solicitud de ayuda técnica o guía resolver un problema"
+            },
+            {
+              "category": "cotizaciones",
+              "description": "El correo solicita información sobre el valor de un trabajo a realiar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        96
+      ],
+      "id": "a65ca9c2-584d-4b42-b099-ad244c3c825c",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        352
+      ],
+      "id": "58fef259-0d4e-4497-a942-ef006fa9edec",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        96
+      ],
+      "id": "a8e86f22-cb9e-4ad2-b4d9-42c3805eba1c",
+      "name": "GmailEntrada",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_5044593316295632025"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        -80
+      ],
+      "id": "fce8d11c-875a-402b-ae99-f288b5f92ee8",
+      "name": "Enviar a Lotes",
+      "webhookId": "ced58183-8888-41a3-aaef-9996d9d1e6de",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_1919817281264336827"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        144
+      ],
+      "id": "c04bbaf2-63aa-42d5-a845-f50b8a6d023f",
+      "name": "Enviar a Soporte",
+      "webhookId": "aac3f8a9-0703-483b-b15e-2f9bdc54a9d9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_5467081070307164086"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        384
+      ],
+      "id": "faa90738-0521-4f21-9800-d198f8d86297",
+      "name": "Enviar a cotizaciones",
+      "webhookId": "1104ae4e-e7fb-4616-b5f7-d63eeec564da",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Entrada de correos electrónicos.",
+        "height": 352,
+        "width": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "ef19c499-b42a-4e9a-9387-f8fe94409bff",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Clasificador de intención de correo electrónico.\nAquí en agente entiende qué intención tiene el correo y lo reenvia al cambio de etiquieta para organizarlo en el correo",
+        "height": 752,
+        "width": 352,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "2d376018-331f-4550-8f6a-e1f5ff7f6a76",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "MOver en bandeja de entrada a el lugar que corresponde por etiquieta.",
+        "height": 1072,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "79e2d916-1456-4aff-ab3e-0931cd15f96e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "8bad14f1-8f65-42f7-b1fa-ad44345da984",
+      "name": "Get a message",
+      "webhookId": "3e03790f-5ef0-4ef8-9e25-310161036c27",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function: Extract HTML/Text robusto para Gmail \"Get a message\"\n// Soporta: salida simplificada (html/text) y salida cruda (payload.parts base64)\n\nconst msg = $json;\n\nfunction b64urlDecode(str) {\n  return Buffer.from(str.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');\n}\nfunction findPart(parts, mimeStartsWith) {\n  if (!parts) return null;\n  for (const p of parts) {\n    if (p.mimeType?.startsWith(mimeStartsWith) && p.body?.data) return p.body.data;\n    const inner = findPart(p.parts, mimeStartsWith);\n    if (inner) return inner;\n  }\n  return null;\n}\nfunction headerLookup(headers, name) {\n  if (!headers) return null;\n  const nameLc = name.toLowerCase();\n  if (Array.isArray(headers)) {\n    const h = headers.find(h => (h.name || '').toLowerCase() === nameLc);\n    return h ? h.value : null;\n  }\n  if (typeof headers === 'object') {\n    const key = Object.keys(headers).find(k => k.toLowerCase() === nameLc);\n    return key ? headers[key] : null;\n  }\n  return null;\n}\n\n// 1) Intentar campos de salida simplificada\nlet html =\n  msg.html ||\n  msg.textHtml ||\n  msg.textAsHtml ||\n  null;\n\nlet text =\n  msg.text ||\n  msg.textPlain ||\n  msg.plainText ||\n  null;\n\n// 2) Si no hay, intentar salida cruda (payload/body/parts)\nif (!html) {\n  if (msg.payload?.mimeType?.includes('text/html') && msg.payload?.body?.data) {\n    html = b64urlDecode(msg.payload.body.data);\n  } else {\n    const htmlB64 = findPart(msg.payload?.parts, 'text/html');\n    if (htmlB64) html = b64urlDecode(htmlB64);\n  }\n}\nif (!text) {\n  if (msg.payload?.mimeType === 'text/plain' && msg.payload?.body?.data) {\n    text = b64urlDecode(msg.payload.body.data);\n  } else {\n    const textB64 = findPart(msg.payload?.parts, 'text/plain');\n    if (textB64) text = b64urlDecode(textB64);\n  }\n}\n\n// 3) Fallback: derivar texto desde HTML\nif (!text && html) {\n  text = html\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// 4) Metadatos útiles\nconst subject =\n  msg.subject ||\n  headerLookup(msg.headers, 'subject') ||\n  null;\n\nconst from =\n  (msg.from?.value?.[0]?.address) ||\n  (typeof msg.from === 'string' ? msg.from : null) ||\n  headerLookup(msg.headers, 'from') ||\n  null;\n\nconst to =\n  (msg.to?.value?.[0]?.address) ||\n  (typeof msg.to === 'string' ? msg.to : null) ||\n  headerLookup(msg.headers, 'to') ||\n  null;\n\nconst messageIdHeader =\n  headerLookup(msg.headers, 'message-id') ||\n  headerLookup(msg.headers, 'message-id') ||\n  null;\n\nreturn [{\n  html: html ?? null,\n  text: text ?? null,\n  subject,\n  from,\n  to,\n  gmailId: msg.id ?? null,          // ID interno de Gmail\n  messageId: messageIdHeader ?? null // Header Message-ID\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -80
+      ],
+      "id": "3790da11-fe8f-45ae-a5bc-12f469921322",
+      "name": "Extract HTML"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Extrae campos de un correo sobre venta de lote. \nResponde exclusivamente un JSON válido con estas claves:\n\n{\n  \"precio\": {\"value\": number, \"currency\": \"USD|COP|...\"},\n  \"tamano\": {\"value\": number, \"unit\": \"m2|ha|acres|...\"},\n  \"ubicacion\": string,\n  \"fuente_message_id\": string\n}\n\n- Convierte \"100k\" → 100000.\n- Normaliza hectáreas/m2/acres.\n- Si falta algún dato, usa null.\n- No devuelvas texto explicativo, solo el JSON.\n",
+              "role": "system"
+            },
+            {
+              "content": "=CORREO:\n{{ $json.text || $json.html }}\n\nINSTRUCCIONES:\n- fuente_message_id = {{ $json.messageId }}\n- Responde SOLO el JSON.\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1616,
+        -80
+      ],
+      "id": "41e4ca3a-8a5c-4b91-b7a1-397d1c6633c9",
+      "name": "AI Extract JSON",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6405e6bb-16eb-4d31-b84b-99f18751a212",
+              "name": "precio",
+              "value": "={{ $json.message.content.precio.value }}",
+              "type": "number"
+            },
+            {
+              "id": "3162d577-3cf1-4428-a62f-0002e59ac649",
+              "name": "currency",
+              "value": "={{ $json.message.content.precio.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "f703bc9c-151a-4722-80dc-399be083eb82",
+              "name": "tamaño",
+              "value": "={{ $json.message.content.tamano.value }}",
+              "type": "number"
+            },
+            {
+              "id": "b3c7b487-f547-4191-b435-b74b13459119",
+              "name": "unidad",
+              "value": "={{ $json.message.content.tamano.unit }}",
+              "type": "string"
+            },
+            {
+              "id": "d25dfe4d-3a7e-47ae-9bb3-acfc45a29313",
+              "name": "ubicacion",
+              "value": "={{ $json.message.content.ubicacion }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1968,
+        -80
+      ],
+      "id": "de3dd964-31a1-4cbe-9576-af4c25b71917",
+      "name": "Normalizar"
+    },
+    {
+      "parameters": {
+        "content": "Extraer contenido del correo Electrónico",
+        "height": 576,
+        "width": 736,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1152,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "6546dea9-88ac-4db2-9d42-da04d3cb2ae6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Normalizar contenido en formato para que reciba la hoja de calculo",
+        "height": 544,
+        "width": 224,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1904,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "ebc7c93e-c5d7-4ed9-95ad-3df89471b2fa",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Actualizar nuestra hoja de Cálculo",
+        "height": 432,
+        "width": 288,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2144,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "39fc2d5b-1300-4a54-b652-85b19e291717",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU",
+          "mode": "list",
+          "cachedResultName": "lotes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lotes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rFxpV04b2ei7BtD8FzpXy3NvzGWSfUm0nBWt5yVz3vU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "precio": "={{ $json.precio }}",
+            "currency": "={{ $json.currency }}",
+            "tamaño": "={{ $json['tamaño'] }}",
+            "unidad": "={{ $json.unidad }}",
+            "ubicación": "={{ $json.ubicacion }}"
+          },
+          "matchingColumns": [
+            "precio"
+          ],
+          "schema": [
+            {
+              "id": "precio",
+              "displayName": "precio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tamaño",
+              "displayName": "tamaño",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unidad",
+              "displayName": "unidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ubicación",
+              "displayName": "ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2160,
+        -80
+      ],
+      "id": "88de2983-cc28-4275-981c-ad5bfd7d82df",
+      "name": "ActualizaciónLotes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NI3t90GmXQIkFt1q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        384
+      ],
+      "id": "e5490e76-70cb-4bdc-b4eb-ecbbe5d8e071",
+      "name": "Get a message1",
+      "webhookId": "3e03790f-5ef0-4ef8-9e25-310161036c27",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function: Extract HTML/Text robusto para Gmail \"Get a message\"\n// Soporta: salida simplificada (html/text) y salida cruda (payload.parts base64)\n\nconst msg = $json;\n\nfunction b64urlDecode(str) {\n  return Buffer.from(str.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');\n}\nfunction findPart(parts, mimeStartsWith) {\n  if (!parts) return null;\n  for (const p of parts) {\n    if (p.mimeType?.startsWith(mimeStartsWith) && p.body?.data) return p.body.data;\n    const inner = findPart(p.parts, mimeStartsWith);\n    if (inner) return inner;\n  }\n  return null;\n}\nfunction headerLookup(headers, name) {\n  if (!headers) return null;\n  const nameLc = name.toLowerCase();\n  if (Array.isArray(headers)) {\n    const h = headers.find(h => (h.name || '').toLowerCase() === nameLc);\n    return h ? h.value : null;\n  }\n  if (typeof headers === 'object') {\n    const key = Object.keys(headers).find(k => k.toLowerCase() === nameLc);\n    return key ? headers[key] : null;\n  }\n  return null;\n}\n\n// 1) Intentar campos de salida simplificada\nlet html =\n  msg.html ||\n  msg.textHtml ||\n  msg.textAsHtml ||\n  null;\n\nlet text =\n  msg.text ||\n  msg.textPlain ||\n  msg.plainText ||\n  null;\n\n// 2) Si no hay, intentar salida cruda (payload/body/parts)\nif (!html) {\n  if (msg.payload?.mimeType?.includes('text/html') && msg.payload?.body?.data) {\n    html = b64urlDecode(msg.payload.body.data);\n  } else {\n    const htmlB64 = findPart(msg.payload?.parts, 'text/html');\n    if (htmlB64) html = b64urlDecode(htmlB64);\n  }\n}\nif (!text) {\n  if (msg.payload?.mimeType === 'text/plain' && msg.payload?.body?.data) {\n    text = b64urlDecode(msg.payload.body.data);\n  } else {\n    const textB64 = findPart(msg.payload?.parts, 'text/plain');\n    if (textB64) text = b64urlDecode(textB64);\n  }\n}\n\n// 3) Fallback: derivar texto desde HTML\nif (!text && html) {\n  text = html\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// 4) Metadatos útiles\nconst subject =\n  msg.subject ||\n  headerLookup(msg.headers, 'subject') ||\n  null;\n\nconst from =\n  (msg.from?.value?.[0]?.address) ||\n  (typeof msg.from === 'string' ? msg.from : null) ||\n  headerLookup(msg.headers, 'from') ||\n  null;\n\nconst to =\n  (msg.to?.value?.[0]?.address) ||\n  (typeof msg.to === 'string' ? msg.to : null) ||\n  headerLookup(msg.headers, 'to') ||\n  null;\n\nconst messageIdHeader =\n  headerLookup(msg.headers, 'message-id') ||\n  headerLookup(msg.headers, 'message-id') ||\n  null;\n\nreturn [{\n  html: html ?? null,\n  text: text ?? null,\n  subject,\n  from,\n  to,\n  gmailId: msg.id ?? null,          // ID interno de Gmail\n  messageId: messageIdHeader ?? null // Header Message-ID\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        384
+      ],
+      "id": "527a2feb-e91b-445e-82a9-f34c21846d57",
+      "name": "Extract HTML1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Robust extractor para Zillow en correos reenviados (tracking + encoded)\nfunction qpDecode(s='') {\n  return s\n    .replace(/=\\r?\\n/g, '')             // soft-break quoted-printable\n    .replace(/&amp;/g, '&')\n    .replace(/&#x2F;|&#47;/g, '/')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"');\n}\nconst html = $json.html || '';\nconst text = $json.text || '';\nconst raw = qpDecode(html + '\\n' + text);\n\nfunction collectUrls(str){\n  const out = [], seen = new Set();\n  const add = u => { if (u && !seen.has(u)) { seen.add(u); out.push(u); } };\n  for (const m of str.matchAll(/href=[\"']([^\"']+)[\"']/gi)) add(m[1]);\n  for (const m of str.matchAll(/https?:\\/\\/[^\\s\"'<>]+/gi)) add(m[0]);\n  return out;\n}\nfunction deepDecode(u){\n  try {\n    let t = u;\n    for (let i=0; i<3; i++) {                         // 3 rondas por si hay doble/triple encoding\n      const p = t.match(/[?&](u|url|target)=([^&\"'<>]+)/i);\n      if (p) t = decodeURIComponent(p[2]);\n      if (/%2F|%3A|%3F|%26|%3D/i.test(t)) t = decodeURIComponent(t);\n      t = qpDecode(t);\n    }\n    return t;\n  } catch { return u; }\n}\n\nconst candidates = collectUrls(raw).map(deepDecode);\n\n// 1) ¿Tenemos homedetails directo?\nlet homedetails = candidates.find(u => /zillow\\.com\\/homedetails\\//i.test(u)) || null;\n\n// 2) Intenta extraer zpid\nlet zpid = null;\nfunction pullZpidFrom(str){\n  return (str.match(/\\/(\\d{6,})_zpid/i)\n       || str.match(/zpid[_/=-](\\d{6,})/i)\n       || str.match(/%2F(\\d{6,})_zpid%2F/i)\n       || str.match(/zpid_target\\/(\\d{6,})_zpid/i))?.[1] || null;\n}\nif (homedetails) zpid = pullZpidFrom(homedetails);\nif (!zpid) {\n  for (const u of candidates) {\n    zpid = pullZpidFrom(u);\n    if (zpid) break;\n  }\n}\nif (!zpid) zpid = pullZpidFrom(raw) || null;\n\n// 3) Construye URL canónica\nconst propertyUrl = zpid ? `https://www.zillow.com/homedetails/${zpid}_zpid/` : (homedetails || null);\n\n// Devuelvo también algunos candidatos para debug\nreturn [{ zpid, propertyUrl, candidates: candidates.slice(0, 12) }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        384
+      ],
+      "id": "633af6cd-a73b-4848-b99e-56bd5c43242f",
+      "name": "Extract Zillow URL"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.propertyUrl }}",
+        "formats": [
+          "markdown",
+          "summary"
+        ],
+        "scrapeOptions": {}
+      },
+      "type": "n8n-nodes-firecrawl-tool.firecrawlToolTool",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        608
+      ],
+      "id": "761c5250-1a5e-4a46-91d1-9e8c99280dd5",
+      "name": "Firecrawl Tool",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "Abznw1MQOYmtBAuA",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.propertyUrl }}",
+        "options": {
+          "systemMessage": "=Deja que la herramienta \"Firecrawl Toll\" haga el scraping y cuando termine trae la información que obtuvo de la sección summary y el la información en Markdown en un json organizado"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        384
+      ],
+      "id": "47972499-88d2-4d9d-9038-21a9c156b794",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        608
+      ],
+      "id": "425cf2d4-7218-46d5-8772-535c5e01cf3f",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.propertyUrl }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1696,
+        624
+      ],
+      "id": "882ec82e-4cae-4af6-80a9-2b99cdc6596c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "974a7434-d0ce-467d-9ba6-b1bd7ecebc4a",
+              "name": "ubicación",
+              "value": "={{ $json.ubicacion }}",
+              "type": "string"
+            },
+            {
+              "id": "8e3a8106-785d-4087-a9d4-bfda59c7a59d",
+              "name": "tamaño",
+              "value": "={{ $json.tamano_acres }}",
+              "type": "number"
+            },
+            {
+              "id": "b300af08-eb3a-42da-835d-783dcf962ad1",
+              "name": "precio",
+              "value": "={{ Number( \n  (\n    $json.precio_raw.match(/listed for\\s*\\$?([\\d,\\.]+)/i)?.[1] ||\n    $json.precio_raw.match(/\\$[\\d,\\.]+/)?.[0] || ''\n  ).replace(/[^0-9.]/g,'')\n) }}\n",
+              "type": "number"
+            },
+            {
+              "id": "161cd3ee-df52-4d35-8520-6195454dd973",
+              "name": "descripcion",
+              "value": "={{ $json.descripcion }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2272,
+        384
+      ],
+      "id": "bd04a43b-84e4-4d21-8541-11c46738428c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node\n// Toma el summary del item (o parsea item.json.output si viene como string)\n// y devuelve campos: ubicacion, tamano_raw, tamano_acres, precio_raw, precio_usd, descripcion.\n\nfunction safeParseMaybe(str) {\n  try { return JSON.parse(str); } catch { return null; }\n}\n\nfunction cleanNumber(s) {\n  return String(s || \"\").replace(/[^0-9.]/g, \"\");\n}\n\nreturn $input.all().map((item) => {\n  // 1) Normaliza la fuente de datos\n  let src = item.json || {};\n  if (typeof src.output === \"string\") {\n    const maybe = safeParseMaybe(src.output);\n    if (maybe && typeof maybe === \"object\") src = maybe;\n  }\n\n  const mi = src.markdown_info || {};\n  const summary = String(src.summary || \"\");\n\n  // 2) Extrae por regex desde summary\n  let ubicacion = \"\";\n  let tamanoRaw = \"\";\n  let precioRaw = \"\";\n  let descripcion = \"\";\n\n  const locMatch = summary.match(/The property located at (.*?)(?: is a|\\.|$)/i);\n  if (locMatch) ubicacion = locMatch[1].trim();\n\n  const sizeMatch = summary.match(/is a ([^.]*? lot)/i);\n  if (sizeMatch) tamanoRaw = sizeMatch[1].trim();\n\n  const priceSentenceMatch = summary.match(/listed for ([^.]*\\.)/i);\n  if (priceSentenceMatch) precioRaw = priceSentenceMatch[1].trim();\n\n  // Descripción: lo que queda después de la oración de precio\n  if (priceSentenceMatch) {\n    const endIdx = summary.indexOf(priceSentenceMatch[0]) + priceSentenceMatch[0].length;\n    descripcion = summary.slice(endIdx).trim().replace(/^[\\s,.-]+/, \"\");\n  } else {\n    // Fallback: elimina primera oración\n    descripcion = summary.replace(/^.*?\\.\\s*/, \"\").trim();\n  }\n\n  // 3) Fallbacks desde markdown_info si algo faltó\n  if (!ubicacion && mi.address) ubicacion = mi.address;\n  if (!tamanoRaw && mi.lot_size) tamanoRaw = mi.lot_size;\n  if (!precioRaw && mi.price) precioRaw = mi.price;\n  if (!descripcion && mi.special_features) descripcion = mi.special_features;\n\n  // 4) Números limpios\n  const acresMatch = String(tamanoRaw || \"\").match(/([\\d.]+)\\s*-?\\s*acre/i);\n  const tamanoAcres = acresMatch ? acresMatch[1] : \"\";\n  const precioUsd = cleanNumber(precioRaw);\n\n  return {\n    json: {\n      ubicacion: ubicacion,                 // \"Doll Mountain Rd #82-R1, Ellijay, GA 30540\"\n      tamano_raw: tamanoRaw,                // \"3.02-acre unimproved land lot\" | \"3.02 Acres\"\n      tamano_acres: tamanoAcres,            // \"3.02\"\n      precio_raw: precioRaw,                // \"$39,700, following a price cut of $50,000.\"\n      precio_usd: precioUsd,                // \"39700\"\n      descripcion: descripcion              // Texto largo de la descripción\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        384
+      ],
+      "id": "c5a527b8-98dd-48a6-b518-642eedec8af0",
+      "name": "Normalizar Info"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GmailEntrada": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Enviar a Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar a Soporte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar a cotizaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a Lotes": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a Soporte": {
+      "main": [
+        []
+      ]
+    },
+    "Enviar a cotizaciones": {
+      "main": [
+        [
+          {
+            "node": "Get a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Extract HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract HTML": {
+      "main": [
+        [
+          {
+            "node": "AI Extract JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extract JSON": {
+      "main": [
+        [
+          {
+            "node": "Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar": {
+      "main": [
+        [
+          {
+            "node": "ActualizaciónLotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message1": {
+      "main": [
+        [
+          {
+            "node": "Extract HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract HTML1": {
+      "main": [
+        [
+          {
+            "node": "Extract Zillow URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Zillow URL": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Info": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "480e31a4-847c-49cd-82c1-6d2b37a71f69",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-09-27T17:13:16.622Z",
+      "createdAt": "2025-09-27T17:13:16.622Z",
+      "role": "workflow:owner",
+      "workflowId": "5YrevSTMcdKyGhgf",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
