@@ -1,0 +1,1287 @@
+{
+  "updatedAt": "2025-12-21T19:17:43.000Z",
+  "createdAt": "2025-11-27T11:07:10.128Z",
+  "id": "1RvZh1q1B1ZoXoap",
+  "name": "BIO-Identificación V3 infoBiologix EliteFlowers",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b3fdea91-9a89-4cb2-be33-2729d563d00f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "046fd410-0b33-42ab-b2cc-1b28d071d333",
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "XLSX"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3d3e0547-db1f-4342-aace-b926561584f7",
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "xls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "XLS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -592,
+        208
+      ],
+      "id": "39034080-c4f9-4002-8c41-f02a20d53343",
+      "name": "DetectarTipoArchivo"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "a57e8a38-f5c2-4e65-bb18-c312b93e36f5",
+      "name": "ExtraerPDF"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        224
+      ],
+      "id": "0bdd900c-0642-42bb-b12b-efb7242e29e7",
+      "name": "ExtraerXLSX"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        416
+      ],
+      "id": "6cbd7b4f-7617-4134-aacf-e96a10741ddd",
+      "name": "Extraer XLS"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77d0c0c-a92f-44b6-9de2-d217b02701cd",
+              "name": "threadId",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "b526dd61-c1bd-4ec7-a5cb-8267dc19449a",
+              "name": "headers.subject",
+              "value": "={{ $json.headers.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "3530bd2c-94b1-499e-a61c-158cbfdbbe5b",
+              "name": "headers.from",
+              "value": "={{ $json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "00191c2e-1509-4e2a-a7ac-70fecde416e5",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -128
+      ],
+      "id": "973185b9-6b6f-4d2a-8a21-b9e318af8aca",
+      "name": "ExtrerMetaDatos"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- INPUT --- (Merge)\n// 1) Item con { headers: { subject, from } }\n// 2) Para PDF: uno o más items con { text, info, ... }\n//    Para XLS/XLSX: varios items, cada uno es una fila (sin headers, sin text)\n\n// --- OUTPUT ---\n// Si PDF: 1 item con texto y tipoDeArchivo: \"pdf\"\n// Si XLS: N items (uno por fila) con tipoDeArchivo: \"xls\"\n\nlet remitente = \"\";\nlet subject = \"\";\nlet empresa = \"\";\nlet dominio = \"\";\n\nlet textoPDF = \"\";\nconst filasXLS = [];\n\n// 1) Recorremos TODOS los items del Merge\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  // Metadatos del correo\n  if (j.headers) {\n    remitente = j.headers.from || \"\";\n    subject = j.headers.subject || \"\";\n\n    // Empresa desde el subject (e.g. \"Orden de compra Grupo chia\")\n    const m = subject.match(/orden\\s*de\\s*compra\\s*(.*)/i);\n    if (m && m[1]) {\n      empresa = m[1].trim()\n        .split(\" \")\n        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())\n        .join(\" \");\n    }\n\n    const d = remitente.match(/@([\\w.-]+)/);\n    if (d) dominio = d[1].toLowerCase();\n\n    continue;\n  }\n\n  // PDF → el extractor deja un item con 'text'\n  if (typeof j.text === \"string\" && j.text.trim().length > 0) {\n    textoPDF = j.text.trim();\n    continue;\n  }\n\n  // XLS/XLSX → cada fila viene como un objeto (sin 'headers' ni 'text')\n  // Filtramos objetos \"reales\" de fila (con varias claves), ignorando metadatos tipo 'info'\n  const isFilaXLS =\n    !j.text &&\n    !j.headers &&\n    typeof j === \"object\" &&\n    j !== null &&\n    Object.keys(j).length >= 3; // umbral bajo pero suficiente para tus tablas\n\n  if (isFilaXLS) {\n    filasXLS.push(j);\n  }\n}\n\n// 2) Decidimos el tipo de archivo por el contenido detectado\nif (textoPDF) {\n  // 🟠 PDF: devolvemos un solo item\n  return [\n    {\n      json: {\n        remitente,\n        subject,\n        empresa,\n        dominio,\n        tipoDeArchivo: \"pdf\",\n        contenido: textoPDF,\n      },\n    },\n  ];\n}\n\nif (filasXLS.length > 0) {\n  // 🟢 XLS/XLSX: devolvemos un item por cada fila\n  return filasXLS.map(fila => ({\n    json: {\n      remitente,\n      subject,\n      empresa,\n      dominio,\n      tipoDeArchivo: \"xls\",\n      ...fila, // incluye TODAS las columnas originales (Zona, Empresa, Subtotal, etc.)\n    },\n  }));\n}\n\n// ⚪ Fallback (nada detectado)\nreturn [\n  {\n    json: {\n      remitente,\n      subject,\n      empresa,\n      dominio,\n      tipoDeArchivo: \"desconocido\",\n      contenido: \"Sin datos detectados\",\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        128
+      ],
+      "id": "10410048-ca7d-433a-8690-c54ed423a35c",
+      "name": "UnirInformación"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -16,
+        128
+      ],
+      "id": "a7c18337-f601-4bbd-bc07-7a4af6a03b2f",
+      "name": "UnirArchivoyMetaDatos",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "## Identificar si el correo trae archivos adjuntos.\n\nNos permite extraer siempre los metadatos del correo y por las ramas externas detectar qué tipo de archivo adjunto trae o si es un correo que trae la Orden de compra en el cuerpo del correo. ",
+        "height": 896,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1344,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "d184bfaf-a28a-4d65-ac0b-df8b1265bf16",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Descarga el archivo adjunto y lo envía por el switch adecuado para ser extraída la información de la orden de compra",
+        "height": 576,
+        "width": 448,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -736,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "3abfb21d-b0ad-46aa-bc1f-ee451c0a6ae8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Se extraen:\n\n### los metadatos del correo y también la información de la orden de compra y se unen en un merge",
+        "height": 912,
+        "width": 448,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "bd379f4f-9f5c-4a71-b8a8-d9b87748403a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Función y Switch por grupo Empresarial\n\n### El switch detecta con la información para qué grupo empresarial hizo el pedido y lo envía por la rama que corresponde. ",
+        "height": 800,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "525dbf71-f3ea-438b-bf4a-4e92642a1e1f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "format": "resolved",
+        "options": {
+          "customEmailConfig": "[\"UNSEEN\"]",
+          "trackLastMessageId": true
+        }
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -1216,
+        224
+      ],
+      "id": "b9106b51-bbae-4ac2-9b6d-8152e417178c",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "1uvSEmwMcXtkqdDT",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function n8n: Construir mensajes de inconsistencia ---\n// Recibe errores_validacion desde el nodo \"Validación\"\n\nconst data = $json;\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREOS DE RESPUESTA -----------------------------\n// -----------------------------------------------------------------------------\n\nconst correos_respuesta = [\n  \"ordenesdecompra@eliteflower.com\",\n  \"mgalindo@eliteflower.com\",\n  \"sdmurillo@eliteflower.com\",\n  \"lkjimenez@eliteflower.com\",\n  \"scarrillo@eliteflower.com\",\n  \"papiedrahitab@fsanjuan.com\"\n];\n\n// -----------------------------------------------------------------------------\n// --------------------------- DATOS GENERALES ----------------------------------\n// -----------------------------------------------------------------------------\n\nconst empresa = data.json_estructurado?.empresa || \"Cliente\";\nconst numeroOrden = data.json_estructurado?.numeroOrden || \"N/A\";\nconst fechaCompra = data.json_estructurado?.fechaCompra || \"N/A\";\nconst fechaEntrega = data.json_estructurado?.fechaEntrega || \"N/A\";\nconst errores = data.errores_validacion || [];\n\n// -----------------------------------------------------------------------------\n// --------------------- CONSTRUCCIÓN TABLA HTML --------------------------------\n// -----------------------------------------------------------------------------\n\nconst PRESENTACION_LT = 4;\n\nlet tablaErrores = errores.map(e => {\n\n  let descripcion = \"\";\n\n  if (e.tipo === \"cantidad\") {\n    const recibido = Number(e.valor_recibido) || 0;\n\n    const sugerenciaInferior = Math.floor(recibido / PRESENTACION_LT) * PRESENTACION_LT;\n    const sugerenciaSuperior = Math.ceil(recibido / PRESENTACION_LT) * PRESENTACION_LT;\n\n    descripcion = `\n      Cantidad solicitada: <strong>${recibido} LT</strong><br>\n      La presentación oficial es de <strong>${PRESENTACION_LT} LT</strong> por unidad.<br>\n      <strong>Sugerencias:</strong><br>\n      • Ajustar a <strong>${sugerenciaInferior} LT</strong><br>\n      • Ajustar a <strong>${sugerenciaSuperior} LT</strong>\n    `;\n  }\n\n  if (e.tipo === \"precio\") {\n    descripcion = `\n      Precio recibido: <strong>${e.valor_recibido.toLocaleString(\"es-CO\")}</strong><br>\n      Precio oficial para este grupo: <strong>${e.valor_esperado.toLocaleString(\"es-CO\")}</strong>\n    `;\n  }\n\n  return `\n    <tr>\n      <td style=\"border:1px solid #ddd; padding:8px;\">${e.finca}</td>\n      <td style=\"border:1px solid #ddd; padding:8px; text-align:center;\">\n        ${e.tipo.toUpperCase()}\n      </td>\n      <td style=\"border:1px solid #ddd; padding:8px;\">\n        ${descripcion}\n      </td>\n    </tr>\n  `;\n}).join(\"\");\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREO HTML --------------------------------------\n// -----------------------------------------------------------------------------\n\nconst correo_validacion = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#f6f6f6; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#1b5e20; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">\n      Inconsistencia en Orden de Compra - ${empresa}\n    </h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n\n    <p>\n      Hemos recibido su <strong>Orden de Compra No. ${numeroOrden}</strong>\n      con fecha <strong>${fechaCompra}</strong>.\n    </p>\n\n    <p>\n      Durante la validación automática se identificaron las siguientes\n      <strong>inconsistencias</strong>:\n    </p>\n\n    <table style=\"border-collapse:collapse; width:100%; margin-top:10px; font-size:14px;\">\n      <thead>\n        <tr style=\"background-color:#e8f5e9; color:#1b5e20;\">\n          <th style=\"border:1px solid #ddd; padding:8px;\">Finca</th>\n          <th style=\"border:1px solid #ddd; padding:8px;\">Tipo</th>\n          <th style=\"border:1px solid #ddd; padding:8px;\">Detalle</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${tablaErrores}\n      </tbody>\n    </table>\n\n    <p style=\"margin-top:15px;\">\n      Para continuar con facturación y logística, agradecemos confirmar\n      una de las opciones sugeridas.\n    </p>\n\n    <div style=\"background:#f1f8e9; padding:10px; border-radius:6px; font-size:13px;\">\n      <strong>Nota:</strong> Una vez confirmados los datos,\n      Biologix procederá con el despacho.\n    </div>\n\n    <p style=\"margin-top:20px;\">\n      Cordialmente,<br><br>\n      <strong>Equipo Biologix Colombia</strong><br>\n      Área de Compras y Logística<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n</div>\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- MENSAJE WHATSAPP ---------------------------------\n// -----------------------------------------------------------------------------\n\nlet listaWhatsapp = errores.map(e => {\n  if (e.tipo === \"cantidad\") {\n    const recibido = Number(e.valor_recibido) || 0;\n    const inf = Math.floor(recibido / PRESENTACION_LT) * PRESENTACION_LT;\n    const sup = Math.ceil(recibido / PRESENTACION_LT) * PRESENTACION_LT;\n\n    return `• ${e.finca}: Cantidad irregular (${recibido} LT → ${inf} LT o ${sup} LT)`;\n  }\n\n  if (e.tipo === \"precio\") {\n    return `• ${e.finca}: Precio incorrecto (${e.valor_recibido.toLocaleString(\"es-CO\")} vs ${e.valor_esperado.toLocaleString(\"es-CO\")})`;\n  }\n}).join(\"\\n\");\n\nconst mensaje_whatsapp_biologix = `\n⚠️ *Inconsistencias detectadas en OC #${numeroOrden}*\n🏢 *Empresa:* ${empresa}\n\n${listaWhatsapp}\n\n📧 El cliente ya fue notificado por correo para confirmar una de las opciones.\n`;\n\n// -----------------------------------------------------------------------------\n// ------------------------------ ASUNTO ----------------------------------------\n// -----------------------------------------------------------------------------\n\nconst asunto = `Inconsistencias en Orden ${numeroOrden} - ${empresa}`;\n\n// -----------------------------------------------------------------------------\n// ------------------------------ SALIDA ----------------------------------------\n// -----------------------------------------------------------------------------\n\nreturn [\n  {\n    ...data,\n    asunto,\n    correos_respuesta,\n    correo_validacion,\n    mensaje_whatsapp_biologix\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        992
+      ],
+      "id": "e176c78d-93a3-49eb-bf53-fcc5a42e07c8",
+      "name": "ConstruirMensajeValidación"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Validación de cantidades y precios (Elite Flowers) ---\n// Compatible con varias líneas por finca\n\nconst data = $json;\nlet verificacion = \"ok\";\n\n// Precio oficial Elite Flowers\nconst PRECIO_ELITE = 192059;\n\nconst fincas = data.json_estructurado?.finca || {};\n\nlet errores = [];\n\nif (Object.keys(fincas).length === 0) {\n  verificacion = \"error\";\n  errores.push({\n    finca: null,\n    tipo: \"estructura\",\n    mensaje: \"No se encontraron fincas en la orden.\"\n  });\n} else {\n\n  for (const finca in fincas) {\n\n    const lineas = fincas[finca]; // ← ahora es un array\n\n    for (const linea of lineas) {\n\n      const cantidad = Number(linea.cantidad) || 0;\n      const precioUnitario = Number(linea.valorUnitario) || 0;\n\n      // --- Validación 1: Cantidad múltiplo de 4 ---\n      if (cantidad % 4 !== 0) {\n        verificacion = \"error\";\n        errores.push({\n          finca,\n          tipo: \"cantidad\",\n          valor_recibido: cantidad,\n          valor_esperado: \"Múltiplo de 4\",\n          sugerencia: Math.ceil(cantidad / 4) * 4\n        });\n      }\n\n      // --- Validación 2: Precio correcto ---\n      if (precioUnitario !== PRECIO_ELITE) {\n        verificacion = \"error\";\n        errores.push({\n          finca,\n          tipo: \"precio\",\n          valor_recibido: precioUnitario,\n          valor_esperado: PRECIO_ELITE\n        });\n      }\n\n    }\n  }\n}\n\nreturn [\n  {\n    ...data,\n    verificacion,\n    errores_validacion: errores\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        144
+      ],
+      "id": "1c3bd334-c88d-424a-8917-7d839f22b549",
+      "name": "Validación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9660b557-6ec3-46ee-b04d-8a6cf33ae9ea",
+              "leftValue": "={{ $json.verificacion }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        144
+      ],
+      "id": "1ae1f092-befa-4366-8c38-0d6929ab781b",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Generar mensajes correo y WhatsApp desde JSON estructurado ---\n// Compatible con estructura única o múltiples fincas\n\nconst data = $json; // 🔹 En n8n cada item se accede así\nconst info = data.json_estructurado || {};\n\n// -----------------------------------------------------------------------------\n// --------------------------- DATOS GENERALES ----------------------------------\n// -----------------------------------------------------------------------------\n\nconst empresa = info.empresa || data.empresa || \"Cliente\";\nconst numeroOrden = info.numeroOrden || \"N/A\";\nconst fechaCompra = info.fechaCompra || \"\";\nconst fincas = info.finca || {};\nconst subtotal = info.subtotalGeneral || 0;\n\n// -----------------------------------------------------------------------------\n// --------- CALCULAR FECHA DE ENTREGA: SIGUIENTE VIERNES ------------------------\n// -----------------------------------------------------------------------------\n\nfunction obtenerSiguienteViernes(fechaBase) {\n  if (!fechaBase) return \"\";\n\n  let fecha;\n\n  // Soporta DD/MM/YYYY\n  if (typeof fechaBase === \"string\" && fechaBase.includes(\"/\")) {\n    const [dia, mes, anio] = fechaBase.split(\"/\");\n    fecha = new Date(`${anio}-${mes}-${dia}`);\n  } else {\n    fecha = new Date(fechaBase);\n  }\n\n  if (isNaN(fecha.getTime())) return \"\";\n\n  const VIERNES = 5; // 0=Domingo, 5=Viernes\n  const diaSemana = fecha.getDay();\n\n  let diasHastaViernes = (VIERNES - diaSemana + 7) % 7;\n\n  // Si ya es viernes → siguiente viernes\n  if (diasHastaViernes === 0) {\n    diasHastaViernes = 7;\n  }\n\n  fecha.setDate(fecha.getDate() + diasHastaViernes);\n\n  // Devolver DD/MM/YYYY\n  const dd = String(fecha.getDate()).padStart(2, \"0\");\n  const mm = String(fecha.getMonth() + 1).padStart(2, \"0\");\n  const yyyy = fecha.getFullYear();\n\n  return `${dd}/${mm}/${yyyy}`;\n}\n\n// ✅ ESTA LÍNEA ES LA QUE TE FALTABA\nconst fechaEntrega = obtenerSiguienteViernes(fechaCompra);\n\n\n// -----------------------------------------------------------------------------\n// --------------------------- FORMATEADORES ------------------------------------\n// -----------------------------------------------------------------------------\n\nfunction formatoMoneda(num) {\n  if (num === undefined || num === null || isNaN(num)) return \"$ 0\";\n  return \"$ \" + Number(num).toLocaleString(\"es-CO\");\n}\n\n// -----------------------------------------------------------------------------\n// ----------- GENERAR FILAS HTML Y TEXTO WHATSAPP -------------------------------\n// -----------------------------------------------------------------------------\n\nlet filas = \"\";\nlet textoWhats = \"\";\n\nfor (const [nombreFinca, lineas] of Object.entries(fincas)) {\n  for (const linea of lineas) {\n\n    const producto = linea.producto || \"PRECISION MD X 4LT\";\n    const cantidad = Number(linea.cantidad) || 0;\n    const valorUnitario = Number(linea.valorUnitario) || 0;\n    const valorTotal = Number(linea.valorTotal) || 0;\n\n    // ---------------- HTML ----------------\n    filas += `\n      <tr>\n        <td style=\"border:1px solid #ddd; padding:8px;\">${producto}</td>\n        <td style=\"border:1px solid #ddd; padding:8px; text-align:center;\">${cantidad}</td>\n        <td style=\"border:1px solid #ddd; padding:8px; text-align:right;\">${formatoMoneda(valorUnitario)}</td>\n        <td style=\"border:1px solid #ddd; padding:8px; text-align:right;\">${formatoMoneda(valorTotal)}</td>\n        <td style=\"border:1px solid #ddd; padding:8px;\">${nombreFinca}</td>\n      </tr>\n    `;\n\n    // ---------------- WhatsApp ----------------\n    const galones = cantidad / 4;\n    textoWhats += `🌿 *${nombreFinca}*: ${producto} – ${galones} GAL\\n`;\n    textoWhats += `   • Valor unitario: ${formatoMoneda(valorUnitario)}\\n`;\n    textoWhats += `   • Valor total: ${formatoMoneda(valorTotal)}\\n\\n`;\n  }\n}\n\n// -----------------------------------------------------------------------------\n// --------------------------- SUBTOTAL GENERAL ---------------------------------\n// -----------------------------------------------------------------------------\n\ntextoWhats += `💰 *Subtotal general:* ${formatoMoneda(subtotal)}`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- HTML DEL CORREO ----------------------------------\n// -----------------------------------------------------------------------------\n\nconst mensajeCorreo = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#f6f6f6; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#1b5e20; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">Confirmación de Orden de Compra - ${empresa}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n\n    <p>\n      Confirmamos la recepción de su Orden de Compra\n      <strong>${numeroOrden}</strong> realizada el\n      <strong>${fechaCompra}</strong>.<br>\n      La entrega está programada para el\n      <strong>${fechaEntrega}</strong>.\n    </p>\n\n    <h3 style=\"color:#1b5e20;\">🧾 Detalle de productos</h3>\n\n    <table style=\"border-collapse:collapse; width:100%; margin-top:10px;\">\n      <thead>\n        <tr style=\"background-color:#e8f5e9; color:#1b5e20;\">\n          <th style=\"border:1px solid #ddd; padding:8px;\">Producto</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Unitario</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Total</th>\n          <th style=\"border:1px solid #ddd; padding:8px;\">Destino</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${filas}\n      </tbody>\n    </table>\n\n    <p style=\"margin-top:15px;\">\n      <strong>Subtotal:</strong> ${formatoMoneda(subtotal)}<br>\n      <strong>Total:</strong>\n      <span style=\"color:#1b5e20; font-weight:bold;\">\n        ${formatoMoneda(subtotal)}\n      </span>\n    </p>\n\n    <div style=\"background:#f1f8e9; padding:10px; border-radius:6px; font-size:13px;\">\n      <strong>Observaciones:</strong>\n      Biologix iniciará el proceso de facturación y verificará el sitio de entrega.\n    </div>\n\n    <p style=\"margin-top:20px;\">\n      Atentamente,<br><br>\n      <strong>Equipo Biologix Colombia S.A.S</strong><br>\n      📞 320 280 6331<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n\n  <div style=\"text-align:center; font-size:11px; color:#777; margin-top:10px;\">\n    Este correo ha sido generado automáticamente por el sistema de automatización de Biologix.\n  </div>\n</div>\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- ASUNTO -------------------------------------------\n// -----------------------------------------------------------------------------\n\nconst asunto = `Orden de Compra ${numeroOrden} Recibida. Proceso logístico y facturación iniciado -- BIOLOGIX COLOMBIA`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- MENSAJE WHATSAPP ---------------------------------\n// -----------------------------------------------------------------------------\n\nconst mensajeWhatsApp = `\n📦 *Nueva Orden de Compra ${numeroOrden}*\n🏢 *Cliente:* ${empresa}\n🗓️ *Fecha de entrega:* ${fechaEntrega}\n\n${textoWhats}\n\n🚛 Equipo Biologix, por favor iniciar proceso logístico y de facturación.\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREOS DE RESPUESTA -----------------------------\n// -----------------------------------------------------------------------------\n\nconst correos_respuesta = [\n  \"ordenesdecompra@eliteflower.com\",\n  \"mgalindo@eliteflower.com\",\n  \"sdmurillo@eliteflower.com\",\n  \"lkjimenez@eliteflower.com\",\n  \"scarrillo@eliteflower.com\",\n  \"papiedrahitab@fsanjuan.com\"\n];\n\n// -----------------------------------------------------------------------------\n// --------------------------- SALIDA FINAL -------------------------------------\n// -----------------------------------------------------------------------------\n\nreturn {\n  json: {\n    mensaje_correo: mensajeCorreo,\n    asunto,\n    mensaje_whatsapp: mensajeWhatsApp.trim(),\n    correos_respuesta,\n    fecha_entrega_calculada: fechaEntrega\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        272
+      ],
+      "id": "0d0f18c0-14fb-4801-a6b4-bfe81dddacd0",
+      "name": "ConstruirMensajeConfirmación"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "=+573202806331",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        272
+      ],
+      "id": "c0c71ca7-efaa-473e-8d15-635b4b0b0843",
+      "name": "Whatsapp confirmaciónMartha",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Parser Órdenes de Compra Biologix (versión robusta definitiva) ---\n// Admite 1 o varias fincas. Detecta total real y limpia formatos numéricos.\n// Entrada estándar proveniente del switch por empresa (misma estructura).\n\nconst input = $json;\nconst text = input.contenido || \"\";\n\n// ------------------ FUNCIONES AUXILIARES ------------------\n\n// Convierte strings de montos como \"2,304,708.00\" → 2304708\nfunction parseMoney(value) {\n  if (!value) return 0;\n  // elimina todo excepto dígitos\n  const cleaned = String(value).replace(/[^\\d]/g, \"\");\n  return cleaned ? Math.round(parseInt(cleaned, 10) / 100) : 0;\n}\n\n// Convierte cantidades como \"8.00LT\" o \"12,00lt\" → 8 / 12\nfunction parseQty(value) {\n  if (!value) return 0;\n  const numeric = String(value).replace(/[^\\d.,]/g, \"\").replace(\",\", \".\");\n  return parseFloat(numeric) || 0;\n}\n\n// ------------------ EXTRACCIÓN DE DATOS ------------------\n\n// Empresa compradora: justo después de \"Correo:\"\nconst empresaCompradora =\n  text.match(/Correo:\\s*\\n?([^\\n]+)/i)?.[1]?.trim() ||\n  input.empresa ||\n  \"\";\n\n// Número de orden\nconst numeroOrden = text.match(/ORDEN DE COMPRA\\.\\s*([A-Z0-9\\-]+)/i)?.[1] || \"\";\n\n// ------------------ FECHAS (solo DD/MM/YYYY, robusto) ------------------\n\nlet fechaCompra = \"\";\nlet fechaEntrega = \"\";\n\n// Fecha: 1-2 dígitos día, 1-2 mes, 4 año\nconst regexFecha = /(\\d{1,2}\\/\\d{1,2}\\/\\d{4})/;\n\n// -------- Fecha de Compra --------\nlet compraMatch =\n  text.match(new RegExp(regexFecha.source + \"\\\\s*(?:\\\\d{1,2}:\\\\d{2}:\\\\d{2})?\\\\s*Fecha\\\\s*de\\\\s*Compra\\\\s*;?\", \"i\")) ||\n  text.match(new RegExp(regexFecha.source + \"(?=\\\\s*Fecha\\\\s*de\\\\s*Compra)\", \"i\"));\n\nif (compraMatch) {\n  fechaCompra = compraMatch[1]; // Extrae solo la fecha\n}\n\n// -------- Fecha de Entrega --------\nlet entregaMatch =\n  text.match(new RegExp(regexFecha.source + \"\\\\s*(?:\\\\d{1,2}:\\\\d{2}:\\\\d{2})?\\\\s*Fecha\\\\s*de\\\\s*Entrega\\\\s*;?\", \"i\")) ||\n  text.match(new RegExp(regexFecha.source + \"(?=\\\\s*Fecha\\\\s*de\\\\s*Entrega)\", \"i\"));\n\nif (entregaMatch) {\n  fechaEntrega = entregaMatch[1];\n}\n\n\n\n// ------------------ SECCIÓN DE PRODUCTOS ------------------\n\n// Sección después de \"Id Item\"\nconst body = text.split(/Id Item/i)[1] || \"\";\n\n// Líneas de producto PRECISION MD X 4LT\nconst regexLine =\n  /PRECISION\\s+MD\\s+X\\s+4LT\\s+([\\d.,]+)\\s*[Ll][Tt]\\s+([\\d.,]+)\\s+([\\d.,]+)\\s+[0.,]+\\s+([A-ZÁÉÍÓÚÜÑ .\\-\\/]+)/g;\n\nconst finca = {};\nfor (const m of body.matchAll(regexLine)) {\n  const cantidad = parseQty(m[1]);\n  const valorUnitario = parseMoney(m[2]);\n  const valorTotal = parseMoney(m[3]);\n  const nombreFinca = m[4].trim();\n\n  if (!finca[nombreFinca]) {\n    finca[nombreFinca] = [];\n  }\n\n  finca[nombreFinca].push({\n    producto: \"PRECISION MD X 4LT\",\n    cantidad,\n    valorUnitario,\n    valorTotal,\n  });\n}\n\n\n// Total sin IVA (después de \"Valor IVA:\")\nconst totalMatch = text.match(/Valor IVA:\\s*\\n([\\d.,]+)/i);\nlet subtotalGeneral = totalMatch ? parseMoney(totalMatch[1]) : 0;\n\n// Si no se encontró el total explícito, calcula la suma\nif (!subtotalGeneral) {\n  subtotalGeneral = Object.values(finca).reduce(\n    (acc, f) => acc + (f.valorTotal || 0),\n    0\n  );\n}\n\n// ------------------ SALIDA FINAL ------------------\nreturn [\n  {\n    json: {\n      remitente: input.remitente || \"\",\n      subject: input.subject || \"\",\n      empresa: empresaCompradora,\n      json_estructurado: {\n        numeroOrden,\n        fechaCompra,\n        fechaEntrega,\n        empresa: empresaCompradora,\n        finca,\n        subtotalGeneral,\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        128
+      ],
+      "id": "045946b5-4ab3-4169-8133-c502b30e18b4",
+      "name": "OrganizaInfoElite"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        272
+      ],
+      "id": "831aa129-f083-4f1e-b9e4-b390d2d97b31",
+      "name": "Wait",
+      "webhookId": "c68257ee-e525-4a9e-b851-36dfbef785b5"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        896
+      ],
+      "id": "c4fe0425-6ee8-4dc5-b024-7c7069a57071",
+      "name": "Wait1",
+      "webhookId": "0f622d91-f18a-4190-9d14-a852e1a67b7d"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp_biologix }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        1296
+      ],
+      "id": "a51d0d49-7598-417d-b830-fb83240b92c4",
+      "name": "InconsistenciaMartha",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573002285784",
+        "messageText": "={{ $json.mensaje_whatsapp_biologix }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1056
+      ],
+      "id": "316b5d2d-0cb8-4bda-8f7a-d70e74e1cd2f",
+      "name": "InconsistenciaMarcela",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1360,
+        -320
+      ],
+      "id": "4084c3e1-9ce8-4ad0-8842-d51a3f652767",
+      "name": "Loop Over Items",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2256,
+        -528
+      ],
+      "id": "bb42de5c-5e6a-4710-9684-9996ac92d59d",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Extraer lista de fincas desde estructura de Elite Flowers ---\n// Entrada: JSON con json_estructurado.finca\n// Salida: [{ nombre_finca: \"CARNATION\", ... }, { nombre_finca: \"LAS PALMAS\", ... }]\n\nconst input = $json;\nconst info = input.json_estructurado || {};\nconst fincas = info.finca || {};\nconst resultados = [];\n\n// Recorremos todas las fincas encontradas\nfor (const [nombre, detalle] of Object.entries(fincas)) {\n  resultados.push({\n    nombre_finca: nombre.trim(),\n    producto: detalle.producto || \"\",\n    cantidad: detalle.cantidad || 0,\n    valorUnitario: detalle.valorUnitario || 0,\n    valorTotal: detalle.valorTotal || 0,\n    numeroOrden: info.numeroOrden || \"\",\n    fechaCompra: info.fechaCompra || \"\",\n    fechaEntrega: info.fechaEntrega || \"\",\n    empresa: info.empresa || \"\",\n    subtotalGeneral: info.subtotalGeneral || 0\n  });\n}\n\n// Emitimos un item por finca (n8n los separa automáticamente)\nreturn resultados.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -432
+      ],
+      "id": "9c5863a9-38b8-4a39-aa6f-f53f2ab30d49",
+      "name": "DividirPorfincas"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6e889d0b-fc66-4939-9c8e-7a7ecb2528a5",
+              "name": "nombre_finca",
+              "value": "={{ $json.FINCA }}",
+              "type": "string"
+            },
+            {
+              "id": "3a94e599-85ed-4dae-bbee-ec77fca1e791",
+              "name": "JEFE MIPE",
+              "value": "={{ $json.JEFEMIPE }}",
+              "type": "string"
+            },
+            {
+              "id": "e211d9b5-0142-4591-9a1a-6c8f1839f0b7",
+              "name": "CORREO",
+              "value": "={{ $json.CORREO }}",
+              "type": "string"
+            },
+            {
+              "id": "03df69c6-44df-4d0f-9a17-a789f61c954e",
+              "name": "WHATSAPP",
+              "value": "={{ $json.WHATSAPP }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1584,
+        -384
+      ],
+      "id": "4baccfa6-2f92-4b1f-b007-3483c366a795",
+      "name": "GuardarInfoxFinca"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69f79536-fa20-4cd0-9106-0eb720a0cbbd",
+              "name": "nombre_finca",
+              "value": "={{ $json.nombre_finca }}",
+              "type": "string"
+            },
+            {
+              "id": "42432aad-e319-43b5-9e6f-52c7e83b3cf9",
+              "name": "producto",
+              "value": "={{ $json.producto }}",
+              "type": "string"
+            },
+            {
+              "id": "6b40a381-2cad-46e7-88b1-180e56fbf6db",
+              "name": "cantidad",
+              "value": "={{ $json.cantidad }}",
+              "type": "number"
+            },
+            {
+              "id": "0bfa8dc1-9bcf-4b7b-8947-c807f0d2a157",
+              "name": "numeroOrden",
+              "value": "={{ $json.numeroOrden }}",
+              "type": "string"
+            },
+            {
+              "id": "c6422bba-fe89-4901-8934-94cb078521c4",
+              "name": "fechaEntrega",
+              "value": "={{ $json.fechaEntrega }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1584,
+        -576
+      ],
+      "id": "fdaa5f2c-8103-47bb-a6a8-751c6d29136c",
+      "name": "InfoPedidoXFinca"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "nombre_finca",
+        "options": {
+          "multipleMatches": "all"
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1808,
+        -528
+      ],
+      "id": "5518941b-063f-420c-b9f8-f9024a16a0e9",
+      "name": "UnirPedidoYJefe"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Construir mensaje de confirmación para cada finca ---\n// Entrada: items ya unificados por finca (desde el Merge)\n// Salida: un JSON por finca con mensaje listo para enviar por WhatsApp\n\nconst items = $input.all();\n\n// -----------------------------------------------------------------------------\n// -------- FUNCIÓN ROBUSTA: SIGUIENTE VIERNES DESDE FECHA COMPRA ----------------\n// -----------------------------------------------------------------------------\n\nfunction obtenerSiguienteViernes(fechaBase) {\n  if (!fechaBase) return \"Sin definir\";\n\n  const texto = String(fechaBase);\n\n  // Extrae DD/MM/YYYY desde cualquier texto\n  const match = texto.match(/(\\d{2})\\/(\\d{2})\\/(\\d{4})/);\n\n  let fecha;\n\n  if (match) {\n    const [, dia, mes, anio] = match;\n    fecha = new Date(`${anio}-${mes}-${dia}`);\n  } else {\n    fecha = new Date(texto);\n  }\n\n  if (isNaN(fecha.getTime())) return \"Sin definir\";\n\n  const VIERNES = 5;\n  const diaSemana = fecha.getDay();\n\n  let diasHastaViernes = (VIERNES - diaSemana + 7) % 7;\n  if (diasHastaViernes === 0) diasHastaViernes = 7;\n\n  fecha.setDate(fecha.getDate() + diasHastaViernes);\n\n  const dd = String(fecha.getDate()).padStart(2, \"0\");\n  const mm = String(fecha.getMonth() + 1).padStart(2, \"0\");\n  const yyyy = fecha.getFullYear();\n\n  return `${dd}/${mm}/${yyyy}`;\n}\n\n// -----------------------------------------------------------------------------\n// ------------------------------ PROCESAMIENTO ---------------------------------\n// -----------------------------------------------------------------------------\n\nreturn items.map(item => {\n  const data = item.json;\n\n  const finca = data.nombre_finca?.trim() || \"Finca\";\n  const jefe = data[\"JEFE MIPE\"]?.trim() || \"Jefe de MIPE\";\n  const producto = data.producto || \"PRECISION MD X 4LT\";\n  const cantidad = data.cantidad || 0;\n  const numeroOrden = data.numeroOrden || \"N/A\";\n\n  // 👇 USAMOS FECHA DE COMPRA, NO fechaEntrega heredada\n  const fechaCompra = data.fechaCompra || data.fecha_compra || \"\";\n  const fechaEntregaCalculada = obtenerSiguienteViernes(fechaCompra);\n\n  const whatsapp = data[\"WHATSAPP\"] || \"\";\n  const correo = data[\"CORREO\"] || \"\";\n\n  const mensaje = `👋 Hola ${jefe},\nSoy del equipo de *Biologix Colombia* 🌿\n\nSe ha recibido la orden de compra *${numeroOrden}* correspondiente a la finca *${finca}*.\n\n📦 Producto: ${producto}  \n🔢 Cantidad: ${cantidad} unidades  \n📅 Fecha estimada de entrega: ${fechaEntregaCalculada}\n\nPor favor confirma la recepción del pedido.  \nGracias por tu apoyo constante 🌱`;\n\n  return {\n    json: {\n      nombre_finca: finca,\n      jefe_mipe: jefe,\n      whatsapp,\n      correo,\n      mensaje,\n      fecha_entrega_calculada: fechaEntregaCalculada\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        -528
+      ],
+      "id": "0bd8fbab-8b08-43e4-bb90-83909088e75d",
+      "name": "DividirXporPedido"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "=+573238253871",
+        "messageText": "={{ $json.mensaje }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        -528
+      ],
+      "id": "a2146375-93e3-406a-b46a-8679ed665f6b",
+      "name": "EnviarWhatsappAJefes",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "biologix@info.biologix.com.co",
+        "toEmail": "marcela@biologix.com.co",
+        "subject": "={{ $json.asunto }}",
+        "html": "={{ $json.mensaje_correo }}",
+        "options": {
+          "appendAttribution": false,
+          "ccEmail": "=marthagg@biologix.com.co, {{ $json.correos_respuesta[0] }},{{ $json.correos_respuesta[1] }},{{ $json.correos_respuesta[2] }},{{ $json.correos_respuesta[3] }},{{ $json.correos_respuesta[4] }},{{ $json.correos_respuesta[5] }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        80
+      ],
+      "id": "c3636ed2-ed0d-4581-8056-a1eb6c58dcf3",
+      "name": "enviarCorreoconfirmación",
+      "webhookId": "2799ef34-4331-48ff-a3e6-4f89396beed2",
+      "credentials": {
+        "smtp": {
+          "id": "wghuliT5xKr1Ecpj",
+          "name": "EnviarCorreoInfo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "biologix@info.biologix.com.co",
+        "toEmail": "marcela@biologix.com.co",
+        "subject": "={{ $json.asunto }}",
+        "html": "={{ $json.correo_validacion }}",
+        "options": {
+          "appendAttribution": false,
+          "ccEmail": "=marthagg@biologix.com.co, {{ $json.correos_respuesta[0] }},{{ $json.correos_respuesta[1] }},{{ $json.correos_respuesta[2] }},{{ $json.correos_respuesta[3] }},{{ $json.correos_respuesta[4] }},{{ $json.correos_respuesta[5] }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        752
+      ],
+      "id": "8530d8ba-e706-4136-ab57-6cb491a038c1",
+      "name": "EnviarCorreoValidación",
+      "webhookId": "2799ef34-4331-48ff-a3e6-4f89396beed2",
+      "credentials": {
+        "smtp": {
+          "id": "wghuliT5xKr1Ecpj",
+          "name": "EnviarCorreoInfo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "nylxIPbQq2UOFxcb",
+          "mode": "list",
+          "cachedResultName": "JefesMIPE",
+          "cachedResultUrl": "/projects/NG1eJxP2IbDu00JT/datatables/nylxIPbQq2UOFxcb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "FINCA",
+              "condition": "ilike",
+              "keyValue": "={{ $json.nombre_finca }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        -192
+      ],
+      "id": "753c9071-03fa-4fde-ad74-c53661be7507",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fb1edf4a-754b-48ec-8e5b-e567c4aae44d",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Ordenes de Compra - BIOLOGIX COLOMBIA S.A.S",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        224
+      ],
+      "id": "897caa79-75bb-464a-940a-155947898be5",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+573202806331",
+        "toWhatsapp": true,
+        "message": "={{ $json.mensaje_whatsapp }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        112
+      ],
+      "id": "3ab50386-9836-4a92-9c79-fa5b91d1371b",
+      "name": "MensajeConfirmaciónMartha",
+      "credentials": {
+        "twilioApi": {
+          "id": "2ZXICmJx08p5s1hm",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+573002285784",
+        "toWhatsapp": true,
+        "message": "={{ $json.mensaje_whatsapp }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        416
+      ],
+      "id": "30f0308e-90b0-4f48-8039-3b94c205724d",
+      "name": "MensajeConfirmaciónMarcela",
+      "credentials": {
+        "twilioApi": {
+          "id": "2ZXICmJx08p5s1hm",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+573202806331",
+        "toWhatsapp": true,
+        "message": "={{ $json.mensaje_whatsapp_biologix }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        1040
+      ],
+      "id": "1c138e05-b456-4f1d-9e77-d94c06cc993e",
+      "name": "MensajeValidaciónMarcela",
+      "credentials": {
+        "twilioApi": {
+          "id": "2ZXICmJx08p5s1hm",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+573202806331",
+        "toWhatsapp": true,
+        "message": "={{ $json.mensaje_whatsapp_biologix }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        880
+      ],
+      "id": "4cbd837f-841f-40e3-b1b0-5dd846d9125b",
+      "name": "MensajeValidaciónMarcela1",
+      "credentials": {
+        "twilioApi": {
+          "id": "2ZXICmJx08p5s1hm",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573202806331",
+        "messageText": "={{ $json.mensaje_whatsapp_biologix }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        896
+      ],
+      "id": "c0d96718-9b95-4c2a-96c1-f5ec9eb6bb3a",
+      "name": "InconsistenciaMartha1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573002285784",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        480
+      ],
+      "id": "c153f62d-12f3-4bb7-bdc4-8f8a9bec7171",
+      "name": "Whatsapp confirmaciónMarcela",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "DetectarTipoArchivo": {
+      "main": [
+        [
+          {
+            "node": "ExtraerPDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ExtraerXLSX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extraer XLS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtraerPDF": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ExtraerXLSX": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extraer XLS": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ExtrerMetaDatos": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UnirInformación": {
+      "main": [
+        [
+          {
+            "node": "OrganizaInfoElite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UnirArchivoyMetaDatos": {
+      "main": [
+        [
+          {
+            "node": "UnirInformación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeValidación": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "EnviarCorreoValidación",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "InconsistenciaMarcela",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "DividirPorfincas",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ConstruirMensajeConfirmación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ConstruirMensajeValidación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeConfirmación": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp confirmaciónMarcela",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "enviarCorreoconfirmación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OrganizaInfoElite": {
+      "main": [
+        [
+          {
+            "node": "Validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp confirmaciónMartha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "InconsistenciaMartha1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "GuardarInfoxFinca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "EnviarWhatsappAJefes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DividirPorfincas": {
+      "main": [
+        [
+          {
+            "node": "InfoPedidoXFinca",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GuardarInfoxFinca": {
+      "main": [
+        [
+          {
+            "node": "UnirPedidoYJefe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InfoPedidoXFinca": {
+      "main": [
+        [
+          {
+            "node": "UnirPedidoYJefe",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "UnirPedidoYJefe": {
+      "main": [
+        [
+          {
+            "node": "DividirXporPedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EnviarWhatsappAJefes": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DividirXporPedido": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "DetectarTipoArchivo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ExtrerMetaDatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MensajeConfirmaciónMartha": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Email Trigger (IMAP)": {
+      "lastMessageUid": 165
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "133b98e2-9d52-45c0-bedd-0c7eb029da2b",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-27T11:07:10.139Z",
+      "createdAt": "2025-11-27T11:07:10.139Z",
+      "role": "workflow:owner",
+      "workflowId": "1RvZh1q1B1ZoXoap",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
