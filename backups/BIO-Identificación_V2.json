@@ -1,0 +1,1804 @@
+{
+  "updatedAt": "2025-11-20T14:28:57.000Z",
+  "createdAt": "2025-10-22T02:54:21.833Z",
+  "id": "Enxy90queHov6kHq",
+  "name": "BIO-Identificación V2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "labelIds": []
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        224
+      ],
+      "id": "7d2b6c7a-ae0f-4c03-a350-584c16b83948",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b3fdea91-9a89-4cb2-be33-2729d563d00f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "046fd410-0b33-42ab-b2cc-1b28d071d333",
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "XLSX"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3d3e0547-db1f-4342-aace-b926561584f7",
+                    "leftValue": "={{ $binary.attachment_0.fileExtension.toLowerCase() }}",
+                    "rightValue": "xls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "XLS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -464,
+        208
+      ],
+      "id": "ae258b6e-8712-450c-83eb-1c4809c895b7",
+      "name": "DetectarTipoArchivo"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "4c80a8dc-34a6-4a37-a420-b551fe057c7d",
+      "name": "ExtraerPDF"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        224
+      ],
+      "id": "ee3327cb-ddbb-4987-9b5c-458e051ec8ec",
+      "name": "ExtraerXLSX"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        416
+      ],
+      "id": "a9e6e702-9159-446c-96a0-df85933121a3",
+      "name": "Extraer XLS"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        224
+      ],
+      "id": "56588caf-a07d-4e2b-bec1-3de3e428c32b",
+      "name": "DescargarAdjunto (con binarios)",
+      "webhookId": "cb4fd507-cea9-40b8-91d0-a5a703afef15",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3c92056c-0fc2-4327-a33b-f6603fc5ceb5",
+              "leftValue": "={{ $json.payload.mimeType }}",
+              "rightValue": "multipart/mixed",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        -144
+      ],
+      "id": "fecbf413-dd3f-44a5-bbda-7435ba367e96",
+      "name": "TieneArchivoAdjunto?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3c92056c-0fc2-4327-a33b-f6603fc5ceb5",
+              "leftValue": "={{ $json.payload.mimeType }}",
+              "rightValue": "multipart/mixed",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        224
+      ],
+      "id": "bfe6dfb1-630c-49a2-b203-c278c371452f",
+      "name": "TieneArchivoAdjunto?1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3c92056c-0fc2-4327-a33b-f6603fc5ceb5",
+              "leftValue": "={{ $json.payload.mimeType }}",
+              "rightValue": "multipart/mixed",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1008,
+        448
+      ],
+      "id": "014a3d27-8506-4015-b6b7-389a578a8a1e",
+      "name": "TieneArchivoAdjunto?2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77d0c0c-a92f-44b6-9de2-d217b02701cd",
+              "name": "threadId",
+              "value": "={{ $json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "b526dd61-c1bd-4ec7-a5cb-8267dc19449a",
+              "name": "headers.subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "3530bd2c-94b1-499e-a61c-158cbfdbbe5b",
+              "name": "headers.from",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "00191c2e-1509-4e2a-a7ac-70fecde416e5",
+              "name": "text",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -160
+      ],
+      "id": "a0237c2f-e8cc-4db9-8209-1b9e8b40e240",
+      "name": "ExtrerMetaDatos"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "elite flowers",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d5b37598-ea91-476e-8809-e9f6b09ab662"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ELITE FLOWERS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0588ac1e-2f34-4ebe-b357-cd01504d9a0d",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "grupo chia",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "GRUPO CHIA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5c2fa430-1dd2-407d-8faa-76b7108ccdae",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "ipanema",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IPANEMA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "58820030-0bba-4c3b-b66b-acdad1d76cbf",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "sunshine",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUNSHINE"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b8624efe-e3f8-4a55-bcdd-ba0d97557be6",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "alexandra farms",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ALEXANDRA FARMS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3860be31-bf65-46c5-aa7a-848d875ab985",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "cunday",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CUNDAY"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "19d390cd-12fd-4408-a44a-c749efa3c12d",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "el redil",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "EL REDIL"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6cdbd764-f5cf-449c-9172-9346b45611d4",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "guirnaldas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "GUIRNALDAS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "11effa70-b411-4368-a4d2-16c2b9aa5c9c",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "inverpalmas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "INVERPALMAS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cc09ede0-9b3b-47c5-a8e6-232d3c964267",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "la conejera",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LA CONEJERA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ce0e29ab-79c8-4272-85aa-98867d6e3727",
+                    "leftValue": "={{ $json.empresa.toLowerCase() }}",
+                    "rightValue": "matina",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "MATINA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "6272edc8-efe8-446f-ba6c-79b7d8a93ebd",
+      "name": "RedirigirPorEmpresa",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cVCctzvbjkSfuw07",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/cVCctzvbjkSfuw07",
+          "cachedResultName": "SUNSHINE"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "remitente": "={{ $json.remitente }}",
+            "subject": "={{ $json.subject }}",
+            "text": "={{ $json.contenido }}"
+          },
+          "matchingColumns": [
+            "remitente",
+            "subject",
+            "text"
+          ],
+          "schema": [
+            {
+              "id": "remitente",
+              "displayName": "remitente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -256
+      ],
+      "name": "Call SUNSHINE",
+      "id": "8028eaa9-a98d-416a-a805-516e3511432e"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "U07oDgDDGLdgZODm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/U07oDgDDGLdgZODm",
+          "cachedResultName": "IpanemaMensajesDeRespuesta"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -832
+      ],
+      "name": "Call IPANEMAMensajesDeRespuesta",
+      "id": "cb583251-382f-4e58-a13f-708f037b4b5f"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "hBA5jFF2umoVrrYX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/hBA5jFF2umoVrrYX",
+          "cachedResultName": "EliteFlowersSub"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -448
+      ],
+      "name": "Call EliteFlowersSub",
+      "id": "e27227b0-66f8-44a3-925c-a000544c5f61"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zge89SdAZgJCCtlf",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zge89SdAZgJCCtlf",
+          "cachedResultName": "GRCHIA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -640
+      ],
+      "name": "Call GRCHIA",
+      "id": "73ac6552-18c7-4268-832f-48f8d956ce9f"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "RjNKv9zsr7uMF91K",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RjNKv9zsr7uMF91K",
+          "cachedResultName": "Alexandra"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -64
+      ],
+      "name": "Call Alexandra",
+      "id": "3f34f5f9-dfa3-4ea8-a1cd-6a079302ec25"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ULR3DqacsWDVsrF9",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ULR3DqacsWDVsrF9",
+          "cachedResultName": "Cunday"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        128
+      ],
+      "name": "Call Cunday",
+      "id": "94b1d3c9-cf4b-480a-8c8f-eea5361304f0"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "DGlgLXfDKNVd2Cts",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/DGlgLXfDKNVd2Cts",
+          "cachedResultName": "redil"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        320
+      ],
+      "name": "Call redil",
+      "id": "1142d1d2-9614-43d1-9e0a-4f3dd7017cf0"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "H70bxZUUJJmWdWYl",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        512
+      ],
+      "name": "Call Guirnaldas",
+      "id": "18694ad0-839f-414e-bf6d-e8bb6c19fc46"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "CS1qtWCdpxb4zfPR",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        704
+      ],
+      "name": "Call INverpalmas",
+      "id": "e1103df0-3fdd-4cca-87d5-01f47ca244d3"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "VlzRgnJAhcnbFtuJ",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        896
+      ],
+      "name": "Call La Conejera",
+      "id": "aed905a8-f8e7-4b31-8c51-5dc3215c3993"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "t86PAY3tfMLhBJZ9",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        1088
+      ],
+      "name": "Call matina",
+      "id": "a7c4edb4-907f-4ea7-b87c-6a2cc46d4a0e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- INPUT --- (Merge)\n// 1) Item con { headers: { subject, from } }\n// 2) Para PDF: uno o más items con { text, info, ... }\n//    Para XLS/XLSX: varios items, cada uno es una fila (sin headers, sin text)\n\n// --- OUTPUT ---\n// Si PDF: 1 item con texto y tipoDeArchivo: \"pdf\"\n// Si XLS: N items (uno por fila) con tipoDeArchivo: \"xls\"\n\nlet remitente = \"\";\nlet subject = \"\";\nlet empresa = \"\";\nlet dominio = \"\";\n\nlet textoPDF = \"\";\nconst filasXLS = [];\n\n// 1) Recorremos TODOS los items del Merge\nfor (const item of $input.all()) {\n  const j = item.json || {};\n\n  // Metadatos del correo\n  if (j.headers) {\n    remitente = j.headers.from || \"\";\n    subject = j.headers.subject || \"\";\n\n    // Empresa desde el subject (e.g. \"Orden de compra Grupo chia\")\n    const m = subject.match(/orden\\s*de\\s*compra\\s*(.*)/i);\n    if (m && m[1]) {\n      empresa = m[1].trim()\n        .split(\" \")\n        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())\n        .join(\" \");\n    }\n\n    const d = remitente.match(/@([\\w.-]+)/);\n    if (d) dominio = d[1].toLowerCase();\n\n    continue;\n  }\n\n  // PDF → el extractor deja un item con 'text'\n  if (typeof j.text === \"string\" && j.text.trim().length > 0) {\n    textoPDF = j.text.trim();\n    continue;\n  }\n\n  // XLS/XLSX → cada fila viene como un objeto (sin 'headers' ni 'text')\n  // Filtramos objetos \"reales\" de fila (con varias claves), ignorando metadatos tipo 'info'\n  const isFilaXLS =\n    !j.text &&\n    !j.headers &&\n    typeof j === \"object\" &&\n    j !== null &&\n    Object.keys(j).length >= 3; // umbral bajo pero suficiente para tus tablas\n\n  if (isFilaXLS) {\n    filasXLS.push(j);\n  }\n}\n\n// 2) Decidimos el tipo de archivo por el contenido detectado\nif (textoPDF) {\n  // 🟠 PDF: devolvemos un solo item\n  return [\n    {\n      json: {\n        remitente,\n        subject,\n        empresa,\n        dominio,\n        tipoDeArchivo: \"pdf\",\n        contenido: textoPDF,\n      },\n    },\n  ];\n}\n\nif (filasXLS.length > 0) {\n  // 🟢 XLS/XLSX: devolvemos un item por cada fila\n  return filasXLS.map(fila => ({\n    json: {\n      remitente,\n      subject,\n      empresa,\n      dominio,\n      tipoDeArchivo: \"xls\",\n      ...fila, // incluye TODAS las columnas originales (Zona, Empresa, Subtotal, etc.)\n    },\n  }));\n}\n\n// ⚪ Fallback (nada detectado)\nreturn [\n  {\n    json: {\n      remitente,\n      subject,\n      empresa,\n      dominio,\n      tipoDeArchivo: \"desconocido\",\n      contenido: \"Sin datos detectados\",\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        128
+      ],
+      "id": "0d6b1938-c694-487f-8b5a-c1423b7f22ab",
+      "name": "UnirInformación"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -16,
+        128
+      ],
+      "id": "c9f49939-7d8b-48fc-96f1-3bd76d8756bc",
+      "name": "UnirArchivoyMetaDatos",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "## Identificar si el correo trae archivos adjuntos.\n\nNos permite extraer siempre los metadatos del correo y por las ramas externas detectar qué tipo de archivo adjunto trae o si es un correo que trae la Orden de compra en el cuerpo del correo. ",
+        "height": 896,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1344,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "c972ec09-47b5-4f81-8ded-a55d320246ea",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Descarga el archivo adjunto y lo envía por el switch adecuado para ser extraída la información de la orden de compra",
+        "height": 576,
+        "width": 448,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -736,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "d99bc579-63f1-4f7c-9090-eff34da2d2c9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Se extraen:\n\n### los metadatos del correo y también la información de la orden de compra y se unen en un merge",
+        "height": 912,
+        "width": 448,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "109902b8-3f34-46c6-a7e4-ebe5a87994c0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Función y Switch por grupo Empresarial\n\n### El switch detecta con la información para qué grupo empresarial hizo el pedido y lo envía por la rama que corresponde. ",
+        "height": 800,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "43a5edda-9682-462d-91a9-1fc7e0f38840",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "PRECISION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "d6fd8494-4b09-484b-958f-badc04619577"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -1008,
+        1296
+      ],
+      "id": "47eaa16c-5519-4fab-ba7a-4d9d6f8a851b",
+      "name": "Es una Orden?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function: Extraer información por finca (nombre, cantidad, unidad) ---\n\nlet raw = \"\";\ntry {\n  raw = $json.message?.content || \"\";\n} catch (e) {\n  raw = \"\";\n}\n\n// Parsear JSON interno del modelo\nlet parsed = {};\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  parsed = { tipo: \"otro\" };\n}\n\n// Texto del contenido del pedido\nlet contenido = parsed.contenido_pedido || \"\";\n\n// Normalización básica\ncontenido = contenido\n  .replace(/\\s+/g, \" \")\n  .replace(/[,;]/g, \" \")\n  .trim();\n\n// Separar líneas por patrón de fincas\nconst bloques = contenido\n  .split(/(?=Finca\\s)/i) // cortar cuando aparece \"Finca\"\n  .map(b => b.trim())\n  .filter(b => b.toLowerCase().includes(\"finca\"));\n\n// Expresiones para detectar nombre y cantidad\nconst regexFinca = /Finca\\s+([A-Za-zÁÉÍÓÚÜÑ\\s]+)/i;\nconst regexCantidad = /(\\d+(?:[\\.,]\\d+)?)\\s*(Lt|LTS|Litros?|GAL(?:Ó|O)N|GALX4LT)/i;\n\nconst items = bloques.map((b, idx) => {\n  const nombre = (b.match(regexFinca)?.[1] || \"\").trim();\n  const cantidad = b.match(regexCantidad)?.[1] || null;\n  const unidad = b.match(regexCantidad)?.[2] || \"\";\n\n  return {\n    id: idx + 1,\n    nombreFinca: nombre || \"\",\n    cantidad: cantidad ? Number(cantidad.replace(\",\", \".\")) : null,\n    unidad: unidad.toUpperCase()\n  };\n});\n\n// Filtrar los que tengan nombre válido\nconst fincas = items.filter(i => i.nombreFinca);\n\n// --- Salida final ---\nreturn [\n  {\n    json: {\n      tipo: parsed.tipo || \"orden_compra\",\n      empresa_compradora: parsed.empresa_compradora || \"\",\n      correo_empresa: parsed.correo_empresa || \"\",\n      fincas\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        1280
+      ],
+      "id": "ec35df90-d8ae-47bc-96b5-322811ae7efc",
+      "name": "SepararInfoDelpedido"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function: Validar cantidades del pedido PRECISION MD ---\n// Entrada esperada: salida del nodo anterior con campo \"fincas\"\n\nconst data = $json;\nconst fincas = Array.isArray(data.fincas) ? data.fincas : [];\n\n// Lista de errores y sugerencias\nlet inconsistencias = [];\n\nfincas.forEach(finca => {\n  const cantidad = finca.cantidad || 0;\n  const unidad = finca.unidad || \"\";\n\n  // Convertir galones a litros si aplica\n  let litros = cantidad;\n  if (/GAL/i.test(unidad)) {\n    litros = cantidad * 4;\n  }\n\n  // Verificar múltiplos de 4\n  const resto = litros % 4;\n  if (resto !== 0) {\n    const sugerencia = Math.ceil(litros / 4) * 4;\n    inconsistencias.push({\n      nombreFinca: finca.nombreFinca,\n      cantidadSolicitada: litros,\n      unidadOriginal: unidad,\n      cantidadSugerida: sugerencia,\n      mensaje: `La cantidad en ${finca.nombreFinca} no corresponde a múltiplos de 4L. Se sugiere ${sugerencia}L.`\n    });\n  }\n});\n\n// Determinar estado general\nconst esValido = inconsistencias.length === 0;\n\n// --- Salida estructurada ---\nreturn [\n  {\n    json: {\n      tipo: data.tipo || \"orden_compra\",\n      empresa_compradora: data.empresa_compradora || \"\",\n      correo_empresa: data.correo_empresa || \"\",\n      fincas,\n      validacion: esValido ? \"ok\" : \"error\",\n      inconsistencias\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        1056
+      ],
+      "id": "8c7d013f-a94d-4657-8786-1bd0ad8370f7",
+      "name": "ValidaciónCantidad"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function: Organizar información base del correo (para clasificación y parsing) ---\n\nconst input = $json;\n\n// 1️⃣ Obtener remitente\nlet remitente = \"\";\ntry {\n  remitente = input.from?.value?.[0]?.address || input.from?.text || input.headers?.from || \"\";\n  remitente = remitente.replace(/^From:\\s*/i, \"\").trim();\n} catch (e) {\n  remitente = \"\";\n}\n\n// 2️⃣ Obtener asunto\nlet asunto = \"\";\ntry {\n  asunto = input.subject || input.headers?.subject || \"\";\n  asunto = asunto.replace(/^Subject:\\s*/i, \"\").trim();\n} catch (e) {\n  asunto = \"\";\n}\n\n// 3️⃣ Obtener contenido limpio\nlet contenido = \"\";\ntry {\n  contenido = input.text || \"\";\n  // Eliminar saltos excesivos, firmas largas y etiquetas HTML residuales\n  contenido = contenido\n    .replace(/={3,}.*/gs, \"\")           // líneas tipo \"=====\"\n    .replace(/<[^>]+>/g, \" \")           // etiquetas HTML\n    .replace(/\\s+/g, \" \")               // espacios repetidos\n    .trim();\n} catch (e) {\n  contenido = \"\";\n}\n\n// 4️⃣ Armar salida estructurada\nreturn [\n  {\n    json: {\n      remitente,\n      asunto,\n      contenido\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -992,
+        768
+      ],
+      "id": "3efcb47d-f593-46a0-8416-9f3bb6e20582",
+      "name": "ExtraerHTMLdelCOrreo"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un asistente de clasificación y análisis de correos para Biologix Colombia S.A.S, empresa que vende únicamente el producto PRECISION MD en presentaciones de 4 litros (también referidas como 4L, GALX4LT, LT, LTS o GALÓN).\n\nTu tarea es analizar el contenido del correo recibido y determinar si se trata de una ORDEN DE COMPRA o no.\n\nSi el correo contiene un pedido o solicitud del producto PRECISION MD, responde en formato JSON con esta estructura:\n\n{\n  \"tipo\": \"orden_compra\",\n  \"empresa_compradora\": \"Nombre de la empresa que realiza el pedido\",\n  \"correo_empresa\": \"correo principal de la empresa (si aparece)\",\n  \"contenido_pedido\": \"texto del cuerpo del correo donde se menciona el pedido o las cantidades solicitadas\"\n}\n\nSi el correo NO contiene una orden de compra o pedido, responde exactamente con:\n{\"tipo\": \"otro\"}\n\nReglas adicionales:\n- Ignora reenvíos internos desde correos de Biologix.\n- No incluyas firmas de Biologix ni pie de correo de la empresa.\n- Si el correo tiene reenvíos, analiza el cuerpo original del cliente (por ejemplo: “De: compras@colibriflowers.com”).\n",
+              "role": "system"
+            },
+            {
+              "content": "=Correo recibido de: {{ $json.remitente }}\nAsunto: {{ $json.asunto }}\n\nContenido:\n{{ $json.contenido }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1040,
+        1024
+      ],
+      "id": "d12c16e9-c24d-45c2-bdaf-df25e9a2fc09",
+      "name": "IdentificarHTMLy extraer cuerpo",
+      "credentials": {
+        "openAiApi": {
+          "id": "xtHuhpx0QKJYXaAZ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ae1a5e6d-08d8-4f89-ad94-daeb1cd5eaff",
+              "leftValue": "={{ $json.validacion }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        816
+      ],
+      "id": "b94c25ab-a4d6-42fc-9b40-61550707caa1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function: Mensaje de confirmación estilo corporativo Biologix ---\n\nconst data = $json;\nconst empresa = data.empresa_compradora || \"Cliente\";\nconst fincas = Array.isArray(data.fincas) ? data.fincas : [];\nconst fecha = new Date().toLocaleDateString(\"es-CO\");\nconst numeroOrden = data.numeroOrden || \"N/A\";\n\n// --- Tabla de detalle de fincas ---\nlet filas = fincas.map(f => `\n  <tr style=\"background:#ffffff;\">\n    <td style=\"padding:8px; border:1px solid #cfd8dc;\">${f.nombreFinca}</td>\n    <td style=\"padding:8px; text-align:center; border:1px solid #cfd8dc;\">${f.cantidad}</td>\n    <td style=\"padding:8px; text-align:center; border:1px solid #cfd8dc;\">${f.unidad}</td>\n  </tr>\n`).join(\"\");\n\n// --- HTML principal ---\nconst correoHTML = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:750px; margin:auto; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;\">\n  \n  <div style=\"background-color:#1b5e20; color:white; padding:15px 20px;\">\n    <h2 style=\"margin:0; font-size:20px;\">Confirmación de Orden de Compra - ${empresa.toUpperCase()}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:#f9f9f9; padding:25px;\">\n    <p>Estimado equipo de compras de <b>${empresa}</b>,</p>\n    <p>Hemos recibido correctamente su <b>Orden de Compra No. ${numeroOrden}</b> con fecha <b>${fecha}</b>.</p>\n    <p>Los detalles del pedido del producto <b>PRECISION MD</b> son los siguientes:</p>\n\n    <table style=\"width:100%; border-collapse:collapse; margin-top:10px;\">\n      <thead>\n        <tr style=\"background:#e8f5e9; color:#1b5e20;\">\n          <th style=\"text-align:left; padding:8px; border:1px solid #cfd8dc;\">Finca</th>\n          <th style=\"text-align:center; padding:8px; border:1px solid #cfd8dc;\">Cantidad</th>\n          <th style=\"text-align:center; padding:8px; border:1px solid #cfd8dc;\">Unidad</th>\n        </tr>\n      </thead>\n      <tbody>${filas}</tbody>\n    </table>\n\n    <p style=\"margin-top:15px;\">Su orden ha sido registrada exitosamente y será enviada al área de <b>Facturación y Logística</b> para su despacho correspondiente.</p>\n\n    <div style=\"background:#f1f8e9; border-radius:6px; padding:10px; margin-top:20px;\">\n      <p style=\"margin:0; font-size:13px;\"><b>Nota:</b> Todas las presentaciones del producto PRECISION MD son de 4 litros (4LT). En caso de requerir ajustes o entregas especiales, comuníquese con nuestro equipo de soporte.</p>\n    </div>\n\n    <p style=\"margin-top:25px;\">Cordialmente,</p>\n    <p style=\"margin:0;\"><b>Equipo Biologix Colombia</b><br>\n    Área de Compras y Logística</p>\n\n    <p style=\"margin-top:10px; font-size:13px;\">\n      <a href=\"mailto:marthagg@biologix.com.co\" style=\"color:#1b5e20;\">marthagg@biologix.com.co</a> |\n      <a href=\"mailto:marcela@biologix.com.co\" style=\"color:#1b5e20;\">marcela@biologix.com.co</a>\n    </p>\n  </div>\n</div>\n`;\n\n// --- Mensaje WhatsApp corporativo ---\nconst mensajeWhatsapp = `✅ *Confirmación de orden - ${empresa}*\\nOrden recibida correctamente para el producto PRECISION MD:\\n${fincas.map(f => `• ${f.nombreFinca}: ${f.cantidad}${f.unidad}`).join(\"\\n\")}\\n\\n🧾 Iniciamos proceso de facturación y despacho.\\nEquipo Biologix Colombia.`;\n\nreturn [\n  {\n    json: {\n      tipo: \"confirmacion\",\n      empresa,\n      mensaje_correo: correoHTML,\n      mensaje_whatsapp: mensajeWhatsapp\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        688
+      ],
+      "id": "534c49dd-ca1e-46d2-ad13-bf9d790f14ea",
+      "name": "MensajeCOnfirmación"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function: Mensaje de inconsistencia estilo corporativo Biologix ---\n\nconst data = $json;\nconst empresa = data.empresa_compradora || \"Cliente\";\nconst inconsistencias = Array.isArray(data.inconsistencias) ? data.inconsistencias : [];\nconst fecha = new Date().toLocaleDateString(\"es-CO\");\nconst numeroOrden = data.numeroOrden || \"N/A\";\n\n// --- Tabla de inconsistencias ---\nlet filas = inconsistencias.map(i => `\n  <tr style=\"background:#ffffff;\">\n    <td style=\"padding:8px; border:1px solid #cfd8dc;\">${i.nombreFinca}</td>\n    <td style=\"padding:8px; text-align:center; border:1px solid #cfd8dc;\">${i.cantidadSolicitada} ${i.unidadOriginal}</td>\n    <td style=\"padding:8px; text-align:center; border:1px solid #cfd8dc;\">¿Desean ajustar a <b>${i.cantidadSugerida} LT</b> para mantener la presentación estándar de 4LT?</td>\n  </tr>\n`).join(\"\");\n\n// --- HTML principal ---\nconst correoHTML = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:750px; margin:auto; border:1px solid #e0e0e0; border-radius:10px; overflow:hidden;\">\n  \n  <div style=\"background-color:#1b5e20; color:white; padding:15px 20px;\">\n    <h2 style=\"margin:0; font-size:20px;\">Inconsistencia en Orden de Compra - ${empresa.toUpperCase()}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:#f9f9f9; padding:25px;\">\n    <p>Estimado equipo de compras de <b>${empresa}</b>,</p>\n    <p>Hemos recibido su <b>Orden de Compra No. ${numeroOrden}</b> con fecha de compra <b>${fecha}</b>.</p>\n    <p>Durante la revisión, notamos una <b>inconsistencia</b> en las cantidades solicitadas en la(s) siguiente(s) finca(s):</p>\n\n    <table style=\"width:100%; border-collapse:collapse; margin-top:10px;\">\n      <thead>\n        <tr style=\"background:#e8f5e9; color:#1b5e20;\">\n          <th style=\"text-align:left; padding:8px; border:1px solid #cfd8dc;\">Finca</th>\n          <th style=\"text-align:center; padding:8px; border:1px solid #cfd8dc;\">Cantidad Solicitada</th>\n          <th style=\"text-align:center; padding:8px; border:1px solid #cfd8dc;\">Sugerencia</th>\n        </tr>\n      </thead>\n      <tbody>${filas}</tbody>\n    </table>\n\n    <p style=\"margin-top:15px;\">Le solicitamos confirmar las cantidades para que <b>Biologix</b> pueda proceder con el despacho correspondiente.</p>\n\n    <div style=\"background:#f1f8e9; border-radius:6px; padding:10px; margin-top:20px;\">\n      <p style=\"margin:0; font-size:13px;\"><b>Observación:</b> Biologix solo maneja presentaciones de <b>4 litros (4LT)</b>. Cualquier ajuste debe realizarse antes de generar la factura y la programación de entrega.</p>\n    </div>\n\n    <p style=\"margin-top:25px;\">Cordialmente,</p>\n    <p style=\"margin:0;\"><b>Equipo Biologix Colombia</b><br>\n    Área de Compras y Logística</p>\n\n    <p style=\"margin-top:10px; font-size:13px;\">\n      <a href=\"mailto:marthagg@biologix.com.co\" style=\"color:#1b5e20;\">marthagg@biologix.com.co</a> |\n      <a href=\"mailto:marcela@biologix.com.co\" style=\"color:#1b5e20;\">marcela@biologix.com.co</a>\n    </p>\n  </div>\n</div>\n`;\n\n// --- WhatsApp corporativo ---\nconst mensajeWhatsapp = `⚠️ *Inconsistencia detectada - ${empresa}*\\n\\nSe encontraron cantidades no ajustadas a múltiplos de 4L:\\n${inconsistencias.map(i => `• ${i.nombreFinca}: ${i.cantidadSolicitada}${i.unidadOriginal} → sugerido ${i.cantidadSugerida}L`).join(\"\\n\")}\\n\\nPor favor confirmar ajustes antes del despacho.`;\n\nreturn [\n  {\n    json: {\n      tipo: \"correccion\",\n      empresa,\n      mensaje_correo: correoHTML,\n      mensaje_whatsapp: mensajeWhatsapp\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        1024
+      ],
+      "id": "37d3ee34-b3fc-47a9-a3ea-6efeffd727f5",
+      "name": "ValidarCantidad"
+    },
+    {
+      "parameters": {
+        "sendTo": "info@lumorapartner.com",
+        "subject": "={{ $json.empresa }}",
+        "message": "={{ $json.mensaje_correo }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        1056
+      ],
+      "id": "3be7f54e-350f-4fe3-ba91-fa4b462eb8d1",
+      "name": "Send a message",
+      "webhookId": "7a837574-798a-4d76-a217-86f71a766489",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        1232
+      ],
+      "id": "64f5b32a-b95f-4248-91cf-4bfd0fbeb014",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $('ValidarCantidad').item.json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        16,
+        1392
+      ],
+      "id": "d13903e2-54c2-4668-aaba-ec719182543d",
+      "name": "Enviar texto1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        1392
+      ],
+      "id": "247b3b80-424d-493c-befc-2eb6154aef36",
+      "name": "Wait",
+      "webhookId": "1578bde7-688c-494f-8933-c55bd5ee9f38"
+    },
+    {
+      "parameters": {
+        "sendTo": "info@lumorapartner.com",
+        "subject": "={{ $json.empresa }}",
+        "message": "={{ $json.mensaje_correo }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        624
+      ],
+      "id": "6c786616-2dd5-49fe-9742-0aeef0476b94",
+      "name": "Send a message1",
+      "webhookId": "7a837574-798a-4d76-a217-86f71a766489",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        784
+      ],
+      "id": "0e200e66-eafe-46b6-a8e2-4b24cc989e56",
+      "name": "Enviar texto2",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        48,
+        928
+      ],
+      "id": "d65ae317-e19d-4fa4-ab82-4c438af1ee85",
+      "name": "Enviar texto3",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        928
+      ],
+      "id": "cfcba320-1a96-4007-a5b4-98fe7778e58d",
+      "name": "Wait1",
+      "webhookId": "1578bde7-688c-494f-8933-c55bd5ee9f38"
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "TieneArchivoAdjunto?2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TieneArchivoAdjunto?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TieneArchivoAdjunto?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DetectarTipoArchivo": {
+      "main": [
+        [
+          {
+            "node": "ExtraerPDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ExtraerXLSX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extraer XLS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtraerPDF": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ExtraerXLSX": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "DescargarAdjunto (con binarios)": {
+      "main": [
+        [
+          {
+            "node": "DetectarTipoArchivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer XLS": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "TieneArchivoAdjunto?": {
+      "main": [
+        [
+          {
+            "node": "ExtrerMetaDatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TieneArchivoAdjunto?1": {
+      "main": [
+        [
+          {
+            "node": "DescargarAdjunto (con binarios)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TieneArchivoAdjunto?2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "ExtraerHTMLdelCOrreo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtrerMetaDatos": {
+      "main": [
+        [
+          {
+            "node": "UnirArchivoyMetaDatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RedirigirPorEmpresa": {
+      "main": [
+        [
+          {
+            "node": "Call EliteFlowersSub",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call GRCHIA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call IPANEMAMensajesDeRespuesta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call SUNSHINE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Alexandra",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Cunday",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call redil",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Guirnaldas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call INverpalmas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call La Conejera",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call matina",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UnirInformación": {
+      "main": [
+        [
+          {
+            "node": "RedirigirPorEmpresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UnirArchivoyMetaDatos": {
+      "main": [
+        [
+          {
+            "node": "UnirInformación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es una Orden?": {
+      "main": [
+        [
+          {
+            "node": "SepararInfoDelpedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SepararInfoDelpedido": {
+      "main": [
+        [
+          {
+            "node": "ValidaciónCantidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtraerHTMLdelCOrreo": {
+      "main": [
+        [
+          {
+            "node": "IdentificarHTMLy extraer cuerpo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IdentificarHTMLy extraer cuerpo": {
+      "main": [
+        [
+          {
+            "node": "Es una Orden?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ValidaciónCantidad": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "MensajeCOnfirmación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ValidarCantidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ValidarCantidad": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MensajeCOnfirmación": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar texto2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "bd089e0c-589c-4be8-ac00-9f9431c50493",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-22T02:54:21.842Z",
+      "createdAt": "2025-10-22T02:54:21.842Z",
+      "role": "workflow:owner",
+      "workflowId": "Enxy90queHov6kHq",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
