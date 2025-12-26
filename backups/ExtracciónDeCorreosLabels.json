@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2025-09-27T13:28:10.000Z",
+  "createdAt": "2025-09-27T13:15:45.095Z",
+  "id": "GH9bdVvJvgYh7lgm",
+  "name": "ExtracciónDeCorreosLabels",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "5e475412-70be-4cbd-86a6-ab29d749c8e1",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-09-27T13:15:45.097Z",
+      "createdAt": "2025-09-27T13:15:45.097Z",
+      "role": "workflow:owner",
+      "workflowId": "GH9bdVvJvgYh7lgm",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
