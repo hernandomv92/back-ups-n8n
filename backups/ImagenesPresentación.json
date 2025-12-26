@@ -1,0 +1,28 @@
+{
+  "updatedAt": "2025-10-17T22:43:49.348Z",
+  "createdAt": "2025-10-17T22:43:49.348Z",
+  "id": "8UToajK2B439jcXp",
+  "name": "ImagenesPresentación",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "85d8b97b-f6a1-4612-9261-beef744a3add",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-17T22:43:49.357Z",
+      "createdAt": "2025-10-17T22:43:49.357Z",
+      "role": "workflow:owner",
+      "workflowId": "8UToajK2B439jcXp",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
