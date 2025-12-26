@@ -1,0 +1,354 @@
+{
+  "updatedAt": "2025-10-30T13:38:15.000Z",
+  "createdAt": "2025-10-29T13:26:05.817Z",
+  "id": "VlzRgnJAhcnbFtuJ",
+  "name": "La Conejera",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "8bc07b98-5d3c-4bf2-90b0-3384b0fdc282",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1280,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "messageText": "={{ $json.whatsapp_confirmacion }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        896
+      ],
+      "id": "8f2d6c04-4b44-4d19-ae7f-e7cbb49c9b20",
+      "name": "ComunicarEquipoInconsistencia1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.whatsapp_confirmacion }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        896
+      ],
+      "id": "3371b621-1777-4c15-b713-c701f08db238",
+      "name": "ComunicarEquipoInconsistencia",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function n8n: Mensajes de validación – LA CONEJERA / AGRODEX ---\n// Uso: cuando verificacion = \"error\" (cantidades no múltiplos de 4L)\n\nconst data = $json;\n\n// ---------------- DATOS BASE ----------------\nconst empresa       = data.empresa || \"La Conejera / Agrodex SAS\";\nconst numeroOrden   = data.numeroOrden || \"N/A\";\nconst fechaCompra   = data.fechaCompra || \"N/A\";\nconst fechaEntrega  = data.fechaEntrega || \"N/A\";\nconst lugarEntrega  = data.lugarEntrega || \"CAJICÁ\";\nconst finca         = data.finca || \"AGRODEX - LA CONEJERA\";\nconst items         = Array.isArray(data.items) ? data.items : [];\nconst subtotal      = Number(data.subtotalGeneral || 0);\n\n// ---- Formateador de moneda ----\nfunction formatoMoneda(n) {\n  const v = Number(n);\n  if (!isFinite(v)) return \"$ 0\";\n  return \"$ \" + v.toLocaleString(\"es-CO\");\n}\n\n// ---------------- DETECTAR ITEMS ERRÓNEOS ----------------\nconst itemsErroneos = items.filter(i => i.cantidad % 4 !== 0);\n\n// ---------------- CONSTRUIR FILAS ----------------\nlet filas = \"\";\nlet textoWhats = \"\";\n\nitemsErroneos.forEach((item) => {\n  const sugerida = Math.ceil(item.cantidad / 4) * 4;\n  const desc = item.descripcion || \"Producto\";\n  const cant = item.cantidad || 0;\n  const unidad = item.unidad || \"LITRO\";\n\n  filas += `\n    <tr>\n      <td style=\"border:1px solid #ddd; padding:8px;\">${desc}</td>\n      <td style=\"border:1px solid #ddd; text-align:center;\">${cant} ${unidad}</td>\n      <td style=\"border:1px solid #ddd; text-align:center;\">${sugerida} ${unidad}</td>\n    </tr>\n  `;\n  textoWhats += `🔸 *${desc}* — ${cant} ${unidad} → sugerido ${sugerida}\\n`;\n});\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREO HTML ------------------------------------\n// -----------------------------------------------------------------------------\nconst mensajeCorreo = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#fff8f0; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#c62828; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">Validación requerida - ${empresa}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n    <p>Hemos recibido su Orden de Compra <strong>No. ${numeroOrden}</strong>, correspondiente a la finca <strong>${finca}</strong>.</p>\n    <p>Sin embargo, encontramos que las siguientes cantidades no coinciden con la presentación estándar del producto <strong>PRECISION MD (4 L)</strong>:</p>\n\n    <table style=\"border-collapse:collapse; width:100%; margin-top:10px;\">\n      <thead>\n        <tr style=\"background-color:#ffebee; color:#b71c1c;\">\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:left;\">Producto</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad solicitada</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad sugerida</th>\n        </tr>\n      </thead>\n      <tbody>${filas}</tbody>\n    </table>\n\n    <p style=\"margin-top:15px;\">Por favor confirme si desea ajustar las cantidades antes de procesar el despacho y la facturación.</p>\n\n    <div style=\"background:#fff3e0; padding:10px; border-radius:6px; font-size:13px; color:#444;\">\n      <p><strong>Observación:</strong> Una vez confirmadas las cantidades, procederemos con el proceso logístico.</p>\n    </div>\n\n    <p style=\"margin-top:20px;\">Atentamente,</p>\n    <p>\n      <strong>Equipo Biologix Colombia S.A.S</strong><br>\n      📞 320 280 6331<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n\n  <div style=\"text-align:center; font-size:11px; color:#777; margin-top:10px;\">\n    <p>Este correo ha sido generado automáticamente por el sistema de automatización de Biologix.</p>\n  </div>\n</div>\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- ASUNTO Y WHATSAPP -------------------------------\nconst asunto = `Validación OC ${numeroOrden} - ${empresa} | Cantidades no estándar`;\n\nconst mensajeWhatsApp = `\n⚠️ *Validación OC ${numeroOrden} - ${empresa}*  \n🌱 *Finca:* ${finca}  \n📅 *Entrega:* ${fechaEntrega}  \n📍 *Lugar:* ${lugarEntrega}\n\nLas siguientes cantidades no corresponden a múltiplos de 4 L:\n${textoWhats}\n\n⏸ Por favor confirmar si se ajustarán antes del despacho.\n`.trim();\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREOS DESTINO ---------------------------------\nconst correos_respuesta = [\n  \"compras@konejera.com.co\",\n  \"ccortes@agrodexsas.com\"\n];\n\n// -----------------------------------------------------------------------------\n// --------------------------- SALIDA FINAL ------------------------------------\nreturn {\n  json: {\n    ...data,\n    verificacion: \"error\",\n    mensaje_correo: mensajeCorreo,\n    mensaje_whatsapp: mensajeWhatsApp,\n    asunto: asunto,\n    correos_respuesta\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        800
+      ],
+      "id": "93f59306-b8d0-40d4-87c4-bf410358433d",
+      "name": "ConstruirMensajeValidación"
+    },
+    {
+      "parameters": {
+        "sendTo": "hernando@lumorapartner.com",
+        "subject": "={{ $json.asunto_confirmacion }}",
+        "message": "={{ $json.correo_confirmacion }}",
+        "options": {
+          "ccList": "hernandomv@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2400,
+        704
+      ],
+      "id": "e7522dbb-41a3-45ba-b9f1-c04af0210dcc",
+      "name": "EnviarCorreoValidación",
+      "webhookId": "f53836f3-5519-4ee3-a8c6-19b18455e1b7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Validación de cantidades Biologix ---\n// Detecta si las cantidades son múltiplos de 4 (presentación 4L)\n\nconst data = $json;\nlet verificacion = \"ok\";\n\n// 1️⃣ Determinar estructura base\nlet cantidades = [];\n\n// Caso 1: estructura tipo Elite (por finca)\nif (data.json_estructurado?.finca) {\n  const fincas = data.json_estructurado.finca;\n  for (const nombre in fincas) {\n    cantidades.push(Number(fincas[nombre].cantidad) || 0);\n  }\n}\n\n// Caso 2: estructura tipo Cunday / Alexandra (array de items)\nelse if (Array.isArray(data.items)) {\n  cantidades = data.items.map(i => Number(i.cantidad) || 0);\n}\n\n// 2️⃣ Si no hay cantidades, marcar error\nif (cantidades.length === 0) {\n  verificacion = \"error\";\n} else {\n  // 3️⃣ Verificar múltiplos de 4\n  for (const cant of cantidades) {\n    if (cant % 4 !== 0) {\n      verificacion = \"error\";\n      break;\n    }\n  }\n}\n\n// 4️⃣ Retornar con campo de verificación\nreturn [\n  {\n    json: {\n      ...data,\n      verificacion\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        608
+      ],
+      "id": "98d539e4-9936-4faf-916e-ab899b0de6db",
+      "name": "Validación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9660b557-6ec3-46ee-b04d-8a6cf33ae9ea",
+              "leftValue": "={{ $json.verificacion }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1952,
+        608
+      ],
+      "id": "45aa1f38-aa9b-4ab2-be30-f0612ab52ed1",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        512
+      ],
+      "id": "67b01319-0941-4cbd-b35f-cc1818caaa61",
+      "name": "Whatsapp confirmaciónMarcela",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function n8n: Mensajes de confirmación – LA CONEJERA / AGRODEX ---\n// Entrada: datos estructurados del parser OrganizarInfoConejera (verificacion = \"ok\")\n\nconst data = $json;\n\n// --- Datos base ---\nconst empresa       = data.empresa || \"La Conejera / Agrodex SAS\";\nconst numeroOrden   = data.numeroOrden || \"N/A\";\nconst fechaCompra   = data.fechaCompra || \"N/A\";\nconst fechaEntrega  = data.fechaEntrega || \"N/A\";\nconst lugarEntrega  = data.lugarEntrega || \"CAJICÁ\";\nconst finca         = data.finca || \"AGRODEX - LA CONEJERA\";\nconst items         = Array.isArray(data.items) ? data.items : [];\nconst subtotal      = Number(data.subtotalGeneral || 0);\n\n// ---- Formateador de moneda ----\nfunction formatoMoneda(n) {\n  const v = Number(n);\n  if (!isFinite(v)) return \"$ 0\";\n  return \"$ \" + v.toLocaleString(\"es-CO\");\n}\n\n// ---- Construir filas HTML + texto WhatsApp ----\nlet filas = \"\";\nlet textoWhats = \"\";\n\nitems.forEach((item) => {\n  const desc = item.descripcion ?? \"Producto\";\n  const cant = Number(item.cantidad ?? 0);\n  const total = Number(item.valorTotal ?? 0);\n  const unitCalc = Number(item.valorUnitario ?? 0);\n  const unidad = item.unidad ?? \"\";\n\n  filas += `\n    <tr>\n      <td style=\"border:1px solid #ddd; padding:8px;\">${desc}</td>\n      <td style=\"border:1px solid #ddd; text-align:center;\">${cant} ${unidad}</td>\n      <td style=\"border:1px solid #ddd; text-align:right;\">${formatoMoneda(unitCalc)}</td>\n      <td style=\"border:1px solid #ddd; text-align:right;\">${formatoMoneda(total)}</td>\n    </tr>\n  `;\n  textoWhats += `🌿 *${desc}* — ${cant} ${unidad}\\n`;\n});\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREO HTML ------------------------------------\n// -----------------------------------------------------------------------------\nconst mensajeCorreo = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#f6f6f6; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#1b5e20; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">Confirmación de Orden de Compra - ${empresa}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n    <p>Confirmamos la recepción de su Orden de Compra <strong>No. ${numeroOrden}</strong>, emitida el <strong>${fechaCompra}</strong>.<br>\n    La entrega está programada para el <strong>${fechaEntrega}</strong> en <strong>${lugarEntrega}</strong>.</p>\n\n    <h3 style=\"color:#1b5e20;\">🧾 Detalle de producto</h3>\n    <table style=\"border-collapse:collapse; width:100%; margin-top:10px;\">\n      <thead>\n        <tr style=\"background-color:#e8f5e9; color:#1b5e20;\">\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:left;\">Producto</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Unitario</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Total</th>\n        </tr>\n      </thead>\n      <tbody>${filas}</tbody>\n    </table>\n\n    <p style=\"margin-top:15px; font-size:14px;\">\n      <strong>Subtotal:</strong> ${formatoMoneda(subtotal)}<br>\n      <strong>Total:</strong> <span style=\"color:#1b5e20; font-weight:bold;\">${formatoMoneda(subtotal)}</span>\n    </p>\n\n    <div style=\"background:#f1f8e9; padding:10px; border-radius:6px; font-size:13px; color:#444;\">\n      <p><strong>Observaciones:</strong> Biologix iniciará el proceso de facturación y logística de despacho correspondiente.</p>\n    </div>\n\n    <p style=\"margin-top:20px;\">Atentamente,</p>\n    <p>\n      <strong>Equipo Biologix Colombia S.A.S</strong><br>\n      📞 320 280 6331<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n\n  <div style=\"text-align:center; font-size:11px; color:#777; margin-top:10px;\">\n    <p>Este correo ha sido generado automáticamente por el sistema de automatización de Biologix.</p>\n  </div>\n</div>\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- ASUNTO Y WHATSAPP -------------------------------\nconst asunto = `Confirmación OC ${numeroOrden} - ${empresa} | Facturación y logística`;\n\nconst mensajeWhatsApp = `\n📦 *Nueva Orden de Compra ${numeroOrden}*  \n🏢 *Cliente:* ${empresa}  \n🌱 *Finca:* ${finca}  \n📅 *Fecha entrega:* ${fechaEntrega}  \n📍 *Lugar:* ${lugarEntrega}\n\n${textoWhats}\n🚛 *Equipo Biologix*, por favor iniciar proceso logístico y de facturación.\n`.trim();\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREOS DESTINO ---------------------------------\nconst correos_respuesta = [\n  \"compras@konejera.com.co\",\n  \"ccortes@agrodexsas.com\"\n];\n\n// -----------------------------------------------------------------------------\n// --------------------------- SALIDA FINAL ------------------------------------\nreturn {\n  json: {\n    ...data,\n    mensaje_correo: mensajeCorreo,\n    asunto: asunto,\n    mensaje_whatsapp: mensajeWhatsApp,\n    correos_respuesta\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        416
+      ],
+      "id": "24ca9630-3f23-462d-8828-c259452599d8",
+      "name": "ConstruirMensajeConfirmación"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "=+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        512
+      ],
+      "id": "a5f4d0a6-5646-40e9-bc7b-54f3fe48f754",
+      "name": "Whatsapp confirmaciónMartha",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=hernandomv@gmail.com",
+        "subject": "={{ $json.asunto }}",
+        "message": "={{ $json.mensaje_correo }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "=hernando@lumorapartner.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2400,
+        320
+      ],
+      "id": "067076ad-cf63-404d-abe2-e7ee2e279c6b",
+      "name": "EnviarCorreoConfirmación",
+      "webhookId": "9240201f-4e2b-42d8-bbb7-68cb89a66d87",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- OrganizarInfoConejera ---\n// Parser final estable para órdenes del grupo LA CONEJERA (Agrodex S.A.S.)\n// Corrige valores decimales y lectura de línea exacta del producto.\n\nconst input = $json;\nconst texto = input.contenido || \"\";\n\n// ---------------- FUNCIONES AUXILIARES ----------------\n\n// Convierte texto de montos a número\nfunction parseNumero(valor) {\n  if (!valor) return 0;\n  // elimina puntos, comas y signos que no sean dígitos\n  const limpio = String(valor).replace(/[^\\d]/g, \"\");\n  // no dividimos entre 100 porque los PDFs vienen con formato \"194.481\" → 194481 correcto\n  return limpio ? parseInt(limpio, 10) : 0;\n}\n\nfunction getRegex(text, regex) {\n  const m = text.match(regex);\n  return m && m[1] ? m[1].trim() : \"\";\n}\n\n// ---------------- LIMPIEZA ----------------\nconst textoLimpio = texto\n  .replace(/\\n+/g, \" \")\n  .replace(/\\s{2,}/g, \" \")\n  .trim();\n\n// ---------------- CAMPOS GENERALES ----------------\nconst numeroOrden =\n  getRegex(textoLimpio, /CODIGO[:\\s]*([0-9]{3,})/i) || \"\";\nconst fechaCompra =\n  getRegex(textoLimpio, /FECHA\\s*([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/i) ||\n  getRegex(textoLimpio, /lunes,\\s*([0-9]{1,2}\\s+de\\s+\\w+\\s+de\\s+[0-9]{4})/i) ||\n  \"\";\n\nconst empresa = input.empresa || \"La Conejera / Agrodex SAS\";\nconst finca = \"AGRODEX - LA CONEJERA\";\n\n// lugar de entrega: solo tomamos hasta CAJICA\nlet lugarEntrega =\n  getRegex(\n    textoLimpio,\n    /ENTREGAR\\s+EL\\s+PEDIDO\\s+LO\\s+MAS\\s+PRONTO\\s+POSIBLE\\s+EN\\s+([A-ZÁÉÍÓÚÑ ]+)/i\n  ) || \"CAJICÁ\";\nlugarEntrega = lugarEntrega\n  .replace(/\\s*@.*/g, \"\")\n  .replace(/BIOLOGIX.*/i, \"\")\n  .trim();\n\n// ---------------- LÍNEA DEL PRODUCTO ----------------\n// Buscamos exactamente la fila donde aparecen cantidad, unidad y montos.\nconst lineaProducto = textoLimpio.match(\n  /(\\d+)\\s+(LITRO|LT|GAL)\\s+(?:PRESICION|PRECISION)\\s+MD\\s+([\\d.,]+)\\$\\s+([\\d.,]+)\\$/i\n);\n\nlet cantidad = 0;\nlet unidad = \"LITRO\";\nlet descripcion = \"PRECISION MD\";\nlet valorUnitario = 0;\nlet valorTotal = 0;\n\nif (lineaProducto) {\n  cantidad = parseFloat(lineaProducto[1]);\n  unidad = lineaProducto[2].toUpperCase();\n  descripcion = \"PRECISION MD\";\n  valorUnitario = parseNumero(lineaProducto[3]);\n  valorTotal = parseNumero(lineaProducto[4]);\n} else {\n  // fallback si el formato varía\n  cantidad = parseFloat(getRegex(textoLimpio, /(\\d+)\\s+(LITRO|LT|GAL)/i)) || 0;\n  unidad = getRegex(textoLimpio, /(LITRO|LT|GAL)/i) || \"LITRO\";\n}\n\nconst subtotalGeneral = valorTotal;\n\n// ---------------- SALIDA ----------------\nreturn [\n  {\n    remitente: input.remitente,\n    subject: input.subject,\n    empresa,\n    dominio: input.dominio,\n    numeroOrden,\n    fechaCompra,\n    fechaEntrega: fechaCompra,\n    lugarEntrega,\n    finca,\n    items: [\n      {\n        descripcion,\n        unidad,\n        cantidad,\n        valorUnitario,\n        valorTotal,\n      },\n    ],\n    subtotalGeneral,\n    tipoArchivo: input.tipoDeArchivo || \"pdf\",\n    fuente: \"OrganizarInfoConejera\",\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        608
+      ],
+      "id": "93e96caa-ca37-4f95-ab71-60311af307d3",
+      "name": "OrganizaInfolaConejera"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "OrganizaInfolaConejera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeValidación": {
+      "main": [
+        [
+          {
+            "node": "ComunicarEquipoInconsistencia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "EnviarCorreoValidación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "ConstruirMensajeConfirmación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ConstruirMensajeValidación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeConfirmación": {
+      "main": [
+        [
+          {
+            "node": "EnviarCorreoConfirmación",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Whatsapp confirmaciónMartha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OrganizaInfolaConejera": {
+      "main": [
+        [
+          {
+            "node": "Validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9960d4e7-cbc1-40e9-a201-f272ec577eff",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-29T13:26:05.819Z",
+      "createdAt": "2025-10-29T13:26:05.819Z",
+      "role": "workflow:owner",
+      "workflowId": "VlzRgnJAhcnbFtuJ",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
