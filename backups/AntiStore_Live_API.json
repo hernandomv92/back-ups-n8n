@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2025-11-24T19:48:55.000Z",
+  "createdAt": "2025-11-20T19:45:04.318Z",
+  "id": "6f8SYIOACWP665if",
+  "name": "AntiStore Live API",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1b3b9d32-d2ab-459a-8086-96927d153acc",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-20T19:45:04.323Z",
+      "createdAt": "2025-11-20T19:45:04.323Z",
+      "role": "workflow:owner",
+      "workflowId": "6f8SYIOACWP665if",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
