@@ -1,0 +1,354 @@
+{
+  "updatedAt": "2025-10-30T13:37:53.000Z",
+  "createdAt": "2025-10-29T13:25:35.133Z",
+  "id": "H70bxZUUJJmWdWYl",
+  "name": "Guirnaldas",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "d24f3879-abb7-4363-a00a-e34e4c13b6ef",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        880,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "messageText": "={{ $json.whatsapp_confirmacion }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        736
+      ],
+      "id": "32ad98a4-7b93-4223-97fa-a3b9f795f070",
+      "name": "ComunicarEquipoInconsistencia1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "+573238253871",
+        "messageText": "={{ $json.whatsapp_confirmacion }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        736
+      ],
+      "id": "a5c056ae-b93e-416f-bbb7-9bfc8626c8ee",
+      "name": "ComunicarEquipoInconsistencia",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function n8n: Mensajes de inconsistencia – GUIRNALDAS / INNOVAFLORA ---\n// Entrada: datos estructurados del parser + verificacion = \"error\"\n\nconst data = $json;\n\n// --- Datos base ---\nconst empresa      = data.empresa || \"Guirnaldas\";\nconst numeroOrden  = data.numeroOrden || \"N/A\";\nconst fechaCompra  = data.fechaCompra || \"N/A\";\nconst fechaEntrega = data.fechaEntrega || \"N/A\";\nconst lugarEntrega = data.lugarEntrega || \"Sin especificar\";\nconst items        = Array.isArray(data.items) ? data.items : [];\n\n// --- Detectar inconsistencias (cantidades no múltiplos de 4) ---\nconst itemsErroneos = items\n  .filter(i => Number(i.cantidad || 0) % 4 !== 0)\n  .map(i => ({\n    itemID: i.itemID,\n    descripcion: i.descripcion || i.itemID || \"Producto\",\n    cantidad: Number(i.cantidad || 0),\n    sugerencia: Math.ceil(Number(i.cantidad || 0) / 4) * 4\n  }));\n\nif (!itemsErroneos.length) {\n  itemsErroneos.push({\n    itemID: \"PRECISION MD 4L\",\n    descripcion: \"PRECISION MD\",\n    cantidad: 0,\n    sugerencia: 4\n  });\n}\n\n// --------------------------- CORREO HTML ------------------------------------\nlet correoHTML = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#f6f6f6; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#145a32; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">Inconsistencia en Orden de Compra - ${empresa}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n    <p>Hemos recibido la Orden de Compra <strong>${numeroOrden}</strong> del <strong>${fechaCompra}</strong>, con entrega programada para el <strong>${fechaEntrega}</strong> en <strong>${lugarEntrega}</strong>.</p>\n    <p>Durante la validación automática se detectaron cantidades que no corresponden a la presentación estándar de <strong>4 L</strong>:</p>\n\n    <table style=\"border-collapse:collapse; width:100%; margin-top:15px;\">\n      <thead>\n        <tr style=\"background-color:#e7f2ec; color:#145a32;\">\n          <th style=\"border:1px solid #ddd; padding:8px;\">Producto</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad solicitada</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Sugerencia (múltiplo 4L)</th>\n        </tr>\n      </thead>\n      <tbody>`;\n\nitemsErroneos.forEach(item => {\n  correoHTML += `\n        <tr>\n          <td style=\"border:1px solid #ddd; padding:8px;\">${item.descripcion}</td>\n          <td style=\"border:1px solid #ddd; padding:8px; text-align:center;\">${item.cantidad} LT</td>\n          <td style=\"border:1px solid #ddd; padding:8px; text-align:center;\">${item.sugerencia} LT</td>\n        </tr>`;\n});\n\ncorreoHTML += `\n      </tbody>\n    </table>\n\n    <div style=\"background:#f9fbe7; padding:12px; border-left:4px solid #198754; border-radius:4px; margin-top:20px;\">\n      <strong>Nota:</strong> Biologix maneja presentaciones de 4 L.  \n      Por favor confirmen si desean ajustar las cantidades sugeridas antes de proceder con facturación y despacho.\n    </div>\n\n    <p style=\"margin-top:20px;\">Cordialmente,</p>\n    <p>\n      <strong>Equipo Biologix Colombia S.A.S</strong><br>\n      📞 320 280 6331<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n\n  <div style=\"text-align:center; font-size:11px; color:#777; margin-top:10px;\">\n    <p>Este correo ha sido generado automáticamente por el sistema de automatización de Biologix.</p>\n  </div>\n</div>\n`;\n\n// --------------------------- MENSAJE WHATSAPP --------------------------------\nlet whatsappMsg = `⚠️ *Inconsistencia en Orden de Compra*\\n`;\nwhatsappMsg += `🏢 *Cliente:* ${empresa}\\n`;\nwhatsappMsg += `🧾 *Orden:* ${numeroOrden}\\n`;\nwhatsappMsg += `📅 *Entrega:* ${fechaEntrega}\\n`;\nwhatsappMsg += `📍 *Lugar:* ${lugarEntrega}\\n\\n`;\nwhatsappMsg += `No son múltiplos de 4 L:\\n`;\n\nitemsErroneos.forEach(item => {\n  whatsappMsg += `- ${item.descripcion}: ${item.cantidad} LT → sugerido ${item.sugerencia} LT\\n`;\n});\n\nwhatsappMsg += `\\n📧 Cliente notificado por correo. En espera de confirmación para continuar con facturación y despacho.`;\n\n// --------------------------- ASUNTO Y CORREOS DESTINO ------------------------\nconst asuntoCorreo = `Inconsistencia en orden ${numeroOrden} - ${empresa}`;\n\nconst correos_respuesta = [\n  \"dfeliciano@innovaflora.com\"\n];\n\n// --------------------------- SALIDA FINAL ------------------------------------\nreturn [\n  {\n    json: {\n      ...data,\n      correo_confirmacion: correoHTML,\n      whatsapp_confirmacion: whatsappMsg,\n      asunto_confirmacion: asuntoCorreo,\n      correos_respuesta,\n      itemsErroneos\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        640
+      ],
+      "id": "034e5356-e272-4296-9fe2-5812631068d6",
+      "name": "ConstruirMensajeValidación"
+    },
+    {
+      "parameters": {
+        "sendTo": "hernando@lumorapartner.com",
+        "subject": "={{ $json.asunto_confirmacion }}",
+        "message": "={{ $json.correo_confirmacion }}",
+        "options": {
+          "ccList": "hernandomv@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2000,
+        544
+      ],
+      "id": "0e21a4ed-06a5-44b0-ab2b-2f7a8d3c83c2",
+      "name": "EnviarCorreoValidación",
+      "webhookId": "f53836f3-5519-4ee3-a8c6-19b18455e1b7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Validación de cantidades Biologix ---\n// Detecta si las cantidades son múltiplos de 4 (presentación 4L)\n\nconst data = $json;\nlet verificacion = \"ok\";\n\n// 1️⃣ Determinar estructura base\nlet cantidades = [];\n\n// Caso 1: estructura tipo Elite (por finca)\nif (data.json_estructurado?.finca) {\n  const fincas = data.json_estructurado.finca;\n  for (const nombre in fincas) {\n    cantidades.push(Number(fincas[nombre].cantidad) || 0);\n  }\n}\n\n// Caso 2: estructura tipo Cunday / Alexandra (array de items)\nelse if (Array.isArray(data.items)) {\n  cantidades = data.items.map(i => Number(i.cantidad) || 0);\n}\n\n// 2️⃣ Si no hay cantidades, marcar error\nif (cantidades.length === 0) {\n  verificacion = \"error\";\n} else {\n  // 3️⃣ Verificar múltiplos de 4\n  for (const cant of cantidades) {\n    if (cant % 4 !== 0) {\n      verificacion = \"error\";\n      break;\n    }\n  }\n}\n\n// 4️⃣ Retornar con campo de verificación\nreturn [\n  {\n    json: {\n      ...data,\n      verificacion\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        448
+      ],
+      "id": "58499cd2-d74a-43ff-be4b-994c7fe7d06a",
+      "name": "Validación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9660b557-6ec3-46ee-b04d-8a6cf33ae9ea",
+              "leftValue": "={{ $json.verificacion }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        448
+      ],
+      "id": "fb8b3f7a-eef1-4994-87f5-2c0259fc1c5d",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        352
+      ],
+      "id": "c4891364-5917-4e35-a8e6-730ab704287a",
+      "name": "Whatsapp confirmaciónMarcela",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Function n8n: Mensajes de confirmación – GUIRNALDAS / INNOVAFLORA ---\n// Entrada: datos estructurados del parser (verificacion = \"ok\")\n\nconst data = $json;\n\n// --- Datos base ---\nconst empresa       = data.empresa || \"Guirnaldas\";\nconst numeroOrden   = data.numeroOrden || \"N/A\";\nconst fechaCompra   = data.fechaCompra || \"N/A\";\nconst fechaEntrega  = data.fechaEntrega || \"N/A\";\nconst lugarEntrega  = data.lugarEntrega || \"Sin especificar\";\nconst items         = Array.isArray(data.items) ? data.items : [];\nconst subtotal      = Number(data.subtotalGeneral || 0);\n\n// ---- Formateador de moneda ----\nfunction formatoMoneda(n) {\n  const v = Number(n);\n  if (!isFinite(v)) return \"$ 0\";\n  return \"$ \" + v.toLocaleString(\"es-CO\");\n}\n\n// ---- Construir filas HTML + texto WhatsApp ----\nlet filas = \"\";\nlet textoWhats = \"\";\n\nitems.forEach((item) => {\n  const desc = item.descripcion ?? item.itemID ?? \"Producto\";\n  const cant = Number(item.cantidad ?? 0);\n  const total = Number(item.total ?? item.subtotal ?? 0);\n  const unitCalc = cant > 0 ? Math.round(total / cant) : Number(item.valorUnitario ?? 0);\n  const unidad = item.unidad ?? \"\";\n\n  filas += `\n    <tr>\n      <td style=\"border:1px solid #ddd; padding:8px;\">${desc}</td>\n      <td style=\"border:1px solid #ddd; padding:8px; text-align:center;\">${cant} ${unidad}</td>\n      <td style=\"border:1px solid #ddd; padding:8px; text-align:right;\">${formatoMoneda(unitCalc)}</td>\n      <td style=\"border:1px solid #ddd; padding:8px; text-align:right;\">${formatoMoneda(total)}</td>\n    </tr>\n  `;\n  textoWhats += `🌿 *${desc}* — ${cant} ${unidad}\\n`;\n});\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREO HTML ------------------------------------\n// -----------------------------------------------------------------------------\nconst mensajeCorreo = `\n<div style=\"font-family:Arial, Helvetica, sans-serif; max-width:700px; margin:auto; background:#f6f6f6; padding:25px; border-radius:10px;\">\n  <div style=\"background-color:#1b5e20; color:white; padding:15px; border-radius:8px 8px 0 0;\">\n    <h2 style=\"margin:0; font-size:20px;\">Confirmación de Orden de Compra - ${empresa}</h2>\n    <p style=\"margin:0; font-size:14px;\">Biologix Colombia S.A.S</p>\n  </div>\n\n  <div style=\"background:white; padding:20px; border:1px solid #ddd; border-top:none; border-radius:0 0 8px 8px;\">\n    <p>Estimado equipo de compras de <strong>${empresa}</strong>,</p>\n    <p>Confirmamos la recepción de su Orden de Compra <strong>${numeroOrden}</strong>, emitida el <strong>${fechaCompra}</strong>.<br>\n    La entrega está programada para el <strong>${fechaEntrega}</strong> en <strong>${lugarEntrega}</strong>.</p>\n\n    <h3 style=\"color:#1b5e20;\">🧾 Detalle de productos</h3>\n    <table style=\"border-collapse:collapse; width:100%; margin-top:10px;\">\n      <thead>\n        <tr style=\"background-color:#e8f5e9; color:#1b5e20;\">\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:left;\">Producto</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:center;\">Cantidad</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Unitario</th>\n          <th style=\"border:1px solid #ddd; padding:8px; text-align:right;\">Valor Total</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${filas}\n      </tbody>\n    </table>\n\n    <p style=\"margin-top:15px; font-size:14px;\">\n      <strong>Subtotal:</strong> ${formatoMoneda(subtotal)}<br>\n      <strong>Régimen de tributación simple:</strong><br>\n      <strong>Total:</strong> <span style=\"color:#1b5e20; font-weight:bold;\">${formatoMoneda(subtotal)}</span>\n    </p>\n\n    <div style=\"background:#f1f8e9; padding:10px; border-radius:6px; font-size:13px; color:#444;\">\n      <p><strong>Observaciones:</strong> Biologix iniciará el proceso de facturación y logística de despacho correspondiente.</p>\n    </div>\n\n    <p style=\"margin-top:20px;\">Atentamente,</p>\n    <p>\n      <strong>Equipo Biologix Colombia S.A.S</strong><br>\n      📞 320 280 6331<br>\n      📧 marthagg@biologix.com.co | marcela@biologix.com.co\n    </p>\n  </div>\n\n  <div style=\"text-align:center; font-size:11px; color:#777; margin-top:10px;\">\n    <p>Este correo ha sido generado automáticamente por el sistema de automatización de Biologix.</p>\n  </div>\n</div>\n`;\n\n// -----------------------------------------------------------------------------\n// --------------------------- ASUNTO Y WHATSAPP -------------------------------\nconst asunto = `Orden de Compra ${numeroOrden} Recibida - ${empresa} | Proceso logístico y facturación iniciado`;\n\nconst mensajeWhatsApp = `\n📦 *Nueva Orden de Compra ${numeroOrden}*  \n🏢 *Cliente:* ${empresa}  \n📅 *Entrega:* ${fechaEntrega}  \n📍 *Lugar:* ${lugarEntrega}\n\n${textoWhats}\n🚛 *Equipo Biologix*, por favor iniciar proceso logístico y de facturación.\n`.trim();\n\n// -----------------------------------------------------------------------------\n// --------------------------- CORREOS DESTINO ---------------------------------\nconst correos_respuesta = [\n  \"dfeliciano@innovaflora.com\"\n];\n\n// -----------------------------------------------------------------------------\n// --------------------------- SALIDA FINAL ------------------------------------\nreturn {\n  json: {\n    ...data,\n    mensaje_correo: mensajeCorreo,\n    asunto: asunto,\n    mensaje_whatsapp: mensajeWhatsApp,\n    correos_respuesta\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        256
+      ],
+      "id": "24b6fee5-ec51-413f-aae7-6756eaf043f2",
+      "name": "ConstruirMensajeConfirmación"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agents-nando",
+        "remoteJid": "=+573238253871",
+        "messageText": "={{ $json.mensaje_whatsapp }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        352
+      ],
+      "id": "554ff8c7-953b-4004-bacf-f95e45146636",
+      "name": "Whatsapp confirmaciónMartha",
+      "credentials": {
+        "evolutionApi": {
+          "id": "kgBF2Y7BDXEuUus8",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=hernandomv@gmail.com",
+        "subject": "={{ $json.asunto }}",
+        "message": "={{ $json.mensaje_correo }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "=hernando@lumorapartner.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2000,
+        160
+      ],
+      "id": "94828dcb-c740-4f2b-bf4a-49348bb6e207",
+      "name": "EnviarCorreoConfirmación",
+      "webhookId": "9240201f-4e2b-42d8-bbb7-68cb89a66d87",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Parser robusto: Orden de Compra GUIRNALDAS / INNOVAFLORA ---\n// Admite múltiples líneas de producto y normaliza montos en pesos COP\n\nconst input = $json;\nconst text = (input.contenido || \"\").replace(/\\r/g, \"\");\n\n// ------------------ UTILIDADES ------------------\n\n// Convierte \"$2.222.640,00\" o \"185.220,00\" → 2222640 / 185220\nfunction parseMoney(v) {\n  if (!v) return 0;\n  const cleaned = String(v).replace(/[^\\d]/g, \"\");\n  return cleaned ? Math.round(parseInt(cleaned, 10) / 100) : 0;\n}\n\n// Limpia texto de espacios extra\nfunction clean(v) {\n  return (v || \"\").replace(/\\s+/g, \" \").trim();\n}\n\n// Convierte fechas \"11/06/2024\" → \"2024-06-11\"\nfunction parseDate(v) {\n  const m = v.match(/(\\d{1,2})[\\/\\-](\\d{1,2})[\\/\\-](\\d{2,4})/);\n  if (!m) return \"\";\n  const [_, d, mo, y] = m;\n  return `${y.length === 2 ? \"20\" + y : y}-${mo.padStart(2, \"0\")}-${d.padStart(2, \"0\")}`;\n}\n\n// ------------------ EXTRACCIÓN PRINCIPAL ------------------\n\n// Número de Orden\nconst numeroOrden =\n  text.match(/Orden\\s+de\\s+compra\\s+No\\.?\\s*([A-Z0-9\\-]+)/i)?.[1] ||\n  text.match(/\\bGOC\\d+/i)?.[0] ||\n  \"N/A\";\n\n// Fecha de emisión / compra\nconst fechaCompra = parseDate(text.match(/Fecha\\s+emisi[oó]n\\s+(\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{2,4})/i)?.[1] || \"\");\n\n// Fecha de entrega (por producto)\nconst fechaEntregaGlobal = parseDate(text.match(/Fecha\\s+de\\s*entrega[\\s:]+(\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{2,4})/i)?.[1] || \"\");\n\n// Lugar de entrega (siempre finca La Magdalena / Tocancipá)\nconst lugarEntrega =\n  clean(text.match(/Vereda\\s+El\\s+Porvenir[^\\n]+/i)?.[0] ||\n  \"Km 2 Vía Tocancipá Ecopetrol - Vereda El Porvenir, Finca La Magdalena\");\n\n// ------------------ EXTRACCIÓN DE ITEMS ------------------\n\n// Formato detectado: \n// Código  Descripción  Cantidad  Unidad  Fecha de entrega  Precio unitario  Valor total\n// AQ713 Precision 12,00 Litro 13/06/2024 185.220,00 2.222.640,00\nconst itemRegex = /([A-Z0-9]+)\\s+([A-Za-z\\s]+?)\\s+(\\d+(?:[.,]\\d+)?)\\s+Litro[s]?\\s+(\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{2,4})\\s+([\\d.,]+)\\s+([\\d.,]+)/gi;\n\nlet items = [];\nlet match;\nwhile ((match = itemRegex.exec(text)) !== null) {\n  const codigo = clean(match[1]);\n  const descripcion = clean(match[2]);\n  const cantidad = Math.round(parseFloat(match[3].replace(\",\", \".\")) || 0);\n  const fechaEntrega = parseDate(match[4]);\n  const valorUnitario = parseMoney(match[5]);\n  const valorTotal = parseMoney(match[6]);\n  const unitCalc = !valorUnitario && cantidad > 0 ? Math.round(valorTotal / cantidad) : valorUnitario;\n\n  items.push({\n    itemID: codigo || \"PRECISION MD 4L\",\n    descripcion,\n    cantidad,\n    unidad: \"LITRO\",\n    fechaEntrega,\n    valorUnitario: unitCalc,\n    subtotal: valorTotal,\n    iva: 0,\n    total: valorTotal\n  });\n}\n\n// En caso de no detectar ítems, insertar uno genérico (para no romper flujo)\nif (items.length === 0) {\n  items.push({\n    itemID: \"PRECISION MD 4L\",\n    descripcion: \"PRECISION MD\",\n    cantidad: 0,\n    unidad: \"LITRO\",\n    valorUnitario: 0,\n    subtotal: 0,\n    iva: 0,\n    total: 0\n  });\n}\n\n// ------------------ TOTALES ------------------\nconst subtotal =\n  items.reduce((sum, i) => sum + (Number(i.total) || 0), 0) ||\n  parseMoney(text.match(/Subtotal\\s+([\\d.,]+)/i)?.[1]) ||\n  0;\n\n// ------------------ SALIDA FINAL ------------------\nconst salida = {\n  remitente: input.remitente || \"\",\n  subject: input.subject || \"\",\n  empresa: input.empresa || \"Guirnaldas\",\n  dominio: input.dominio || \"\",\n  tipoDeArchivo: input.tipoDeArchivo || \"pdf\",\n  numeroOrden,\n  fechaCompra,\n  fechaEntrega: fechaEntregaGlobal || (items[0]?.fechaEntrega || \"\"),\n  lugarEntrega,\n  items,\n  subtotalGeneral: subtotal,\n  totalGeneral: subtotal,\n  observaciones: \"Orden procesada automáticamente.\",\n  fuente: \"Parser Guirnaldas / Innoflora (robusto)\",\n  estadoDeteccion: \"ok\"\n};\n\nreturn salida;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        448
+      ],
+      "id": "842b5820-621d-4ae4-9290-39834b108483",
+      "name": "OrganizaInfoGuirnaldas"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "OrganizaInfoGuirnaldas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeValidación": {
+      "main": [
+        [
+          {
+            "node": "ComunicarEquipoInconsistencia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "EnviarCorreoValidación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "ConstruirMensajeConfirmación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ConstruirMensajeValidación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirMensajeConfirmación": {
+      "main": [
+        [
+          {
+            "node": "EnviarCorreoConfirmación",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Whatsapp confirmaciónMartha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OrganizaInfoGuirnaldas": {
+      "main": [
+        [
+          {
+            "node": "Validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9a0cc198-7d9f-4870-9d8f-b8f03f65cdeb",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-29T13:25:35.136Z",
+      "createdAt": "2025-10-29T13:25:35.136Z",
+      "role": "workflow:owner",
+      "workflowId": "H70bxZUUJJmWdWYl",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
