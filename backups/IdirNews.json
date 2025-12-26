@@ -1,0 +1,1576 @@
+{
+  "updatedAt": "2025-11-05T16:53:52.000Z",
+  "createdAt": "2025-11-05T16:50:42.311Z",
+  "id": "CW8yZ2PrDLYKra74",
+  "name": "IdirNews",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "rss",
+        "options": {}
+      },
+      "id": "2c954fe7-193c-4d87-8338-6b1be8bc0d9b",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        320,
+        400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "id": "705a7a21-d8f1-41ac-a166-a9f2fd3e6650",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        224,
+        1200
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 14
+            }
+          ]
+        }
+      },
+      "id": "18f5113b-17ec-4376-9a1d-8ef617a15593",
+      "name": "Get Articles Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -128,
+        400
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## 1. Save news in a vector store (runs daily)",
+        "height": 888,
+        "width": 2920,
+        "color": 7
+      },
+      "id": "225d2c7f-f9d3-441f-9d1c-f120f0bae7e9",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        -64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2. Send a summary (runs once a day)",
+        "height": 580,
+        "width": 1620,
+        "color": 7
+      },
+      "id": "ec9af731-da65-4dbb-99f1-cfa5753c70db",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        864
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize the most relevant tech news published coming from the datatable. And then the shown column to true",
+        "options": {
+          "systemMessage": "=Write in clear, concise, and easy-to-understand Spanish, as if curating a daily tech newsletter.\n\nUse the Data table tool to retrieve the news and once it's fetched update the column to set the shown column to true.\n\nFor each news item:\n\nProvide a short, informative summary (1–3 sentences max)\n\nInclude the article title and a direct link to the original source\n\nAvoid duplicate stories.\n\nMaintain a tone that's friendly yet professional, suitable for a broad audience of tech enthusiasts."
+        }
+      },
+      "id": "48ab2b4a-1551-4552-be02-2ef9710d5d9d",
+      "name": "News reader AI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        272,
+        976
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "subject": "Daily tech newsletter",
+        "message": "={{ $json.data }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "My IA Bot"
+        }
+      },
+      "id": "90719605-e4af-4fd9-bd63-6d7edcd9653f",
+      "name": "Send Newsletter",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        912,
+        1088
+      ],
+      "webhookId": "0de8b6e8-8611-48a9-ba25-1d023698f577",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output }}",
+        "options": {
+          "simplifiedAutoLink": false
+        }
+      },
+      "id": "31d5437d-bd5d-4d45-b001-b35184f18bf7",
+      "name": "Convert Response to an Email-Friendly Format",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        688,
+        1088
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Edit this:",
+        "height": 240,
+        "width": 220,
+        "color": 3
+      },
+      "id": "57f88026-b5e5-4879-99bc-a12a22036f32",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        1008
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "018882ca-37c3-45af-944f-2081b0605065",
+              "name": "Interests",
+              "type": "string",
+              "value": "eink/epaper devices, AI, Linux, open source, automation, no-code, low-code, productivity, quantum computing, quantum resistant crypto, groundbreaking innovation"
+            },
+            {
+              "id": "4cfdafc1-47a4-41cc-9eb8-72880ea34511",
+              "name": "Number of news items to include",
+              "type": "string",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6384010c-36c6-4f54-b6cf-22e12da0cfc4",
+      "name": "Your topics of interest",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        0,
+        1088
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b8c00469-890b-4b5b-8e2e-2ad9ec2d0815",
+              "name": "rss",
+              "type": "array",
+              "value": "=[\n  \"https://feeds.arstechnica.com/arstechnica/index\",\n  \"https://www.wired.com/feed/rss\",\n  \"https://www.technologyreview.com/topnews.rss\",\n  \"https://techcrunch.com/feed/\"\n]\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2447526d-dd35-494f-bc25-34a3b955b338",
+      "name": "Set Tech News RSS Feeds",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        96,
+        400
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.rss }}",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "id": "7717c4db-62a8-46e3-954b-bb7882be58b3",
+      "name": "Read RSS News Feeds",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        544,
+        400
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "### Edit this:",
+        "height": 240,
+        "width": 220,
+        "color": 3
+      },
+      "id": "9e1b6822-8a4d-4655-8a1a-1d7eabf47cce",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 💡 Customizing this workflow\n\n* Want to use different sources? Swap in your own RSS feeds, or use an API-based news aggregator.\n* Replace the in-memory vector store with **Pinecone**, **Weaviate**, or another persistent vector DB for longer-term storage.\n* Adjust the agent's summarization style to suit internal updates, industry-specific briefings, or even entertainment recaps.\nHere’s an additional bullet point to include under **Customizing this workflow**:\n* Prefer chat over email? Replace the email node with a **Telegram bot** to receive your personalized tech newsletter directly in a Telegram chat.\n\n",
+        "height": 280,
+        "width": 520,
+        "color": 7
+      },
+      "id": "f190ad84-8715-421a-8702-008fd603294b",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        1488
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Add your email:",
+        "height": 240,
+        "width": 220,
+        "color": 3
+      },
+      "id": "0ad0c3f2-7821-4135-8e9f-a5e9395f9e77",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        1008
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9f27ceb-c5f2-4997-8cb1-67576a7bb337",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "4c4f9417-40f2-4fb0-9976-d09f5984680f",
+              "name": "content",
+              "type": "string",
+              "value": "={{ $json['content:encodedSnippet'] ?? $json.contentSnippet}}"
+            },
+            {
+              "id": "e1986bac-054e-4240-ba50-536dbcd27337",
+              "name": "date",
+              "type": "string",
+              "value": "={{ $json.isoDate}}"
+            },
+            {
+              "id": "9566e23c-ac30-4d66-abbd-889f322688b7",
+              "name": "link",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd143e4b-6c0c-4fc1-8b68-98f540381fc6",
+      "name": "Set and Normalize Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2464,
+        400
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "pubDate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        400
+      ],
+      "id": "996ed6fd-ea21-4008-aec7-d5f256ec7a20",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Sort').item.json.contentSnippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "AI related news"
+            },
+            {
+              "category": "None AI related news"
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other",
+          "batching": {
+            "batchSize": 5,
+            "delayBetweenBatches": 100
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        1888,
+        400
+      ],
+      "id": "a29d463a-3c1a-46fc-8ce6-8ce1bc1c309d",
+      "name": "Text Classifier",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1968,
+        688
+      ],
+      "id": "9173cd3e-3ecd-4026-9727-4eb5018ca8b8",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a87919b-8d9f-4059-969a-dba54807f97e",
+              "leftValue": "={{ $json.contentSnippet }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        400
+      ],
+      "id": "925d95bb-f6de-4698-9c2c-f8610fcd589d",
+      "name": "Contains contentSnippet"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "link",
+              "keyValue": "={{ $json.link }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        400
+      ],
+      "id": "6c4da156-8f09-40fb-a270-b8a8b944c93b",
+      "name": "Link no existe en DB"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "link": "={{ $json.link }}",
+            "title": "={{ $json.title }}",
+            "shown": "={{ false }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "shown",
+              "displayName": "shown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "aiRelated",
+              "displayName": "aiRelated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        400
+      ],
+      "id": "8c6a0e30-0382-416f-8b92-78fbbe86a95b",
+      "name": "Añadir Links nuevos a DB"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "link",
+              "keyValue": "={{ $json.link }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "aiRelated": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "shown",
+              "displayName": "shown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "aiRelated",
+              "displayName": "aiRelated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        400
+      ],
+      "id": "22a02674-9061-4624-b4f4-4824c913bab3",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1d480b0-31f6-4cee-ad11-8801c52c9a4b",
+              "name": "creator",
+              "value": "={{ $json.creator.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "8056a223-949a-4a73-b121-272bc6ee6c99",
+              "name": "contentSnippet",
+              "value": "={{ ($json['content:encodedSnippet'] ?? $json.contentSnippet).trim()}}",
+              "type": "string"
+            },
+            {
+              "id": "11ebe73c-dd0c-4eb6-9453-c338b15e949d",
+              "name": "pubDate",
+              "value": "={{ $json.isoDate }}",
+              "type": "string"
+            },
+            {
+              "id": "67b6d540-f3dc-4af6-a2e9-6a12580794dc",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "b8420122-3df8-4ff6-905e-951950180ad0",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        400
+      ],
+      "id": "47bd7334-3e7c-45ae-b086-fd1e77128e22",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get AI news from this tool",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "shown",
+              "condition": "isFalse"
+            },
+            {
+              "keyName": "aiRelated",
+              "condition": "isTrue"
+            }
+          ]
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}"
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        352,
+        1200
+      ],
+      "id": "4dc68af7-0539-4bd8-ae11-a9d79a373035",
+      "name": "Data table"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "link",
+              "keyValue": "={{ $fromAI('link', ``, 'string') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "shown": "={{ true }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "shown",
+              "displayName": "shown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "aiRelated",
+              "displayName": "aiRelated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        480,
+        1200
+      ],
+      "id": "d668ee19-c8df-4a34-b0eb-f00f9f9d05cc",
+      "name": "Update row in Data table"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        1568
+      ],
+      "id": "44aecc4c-8bdc-4204-96fe-204984ceee2c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        128,
+        1568
+      ],
+      "id": "a7a2c656-e2ad-4b7d-b793-6db7041b1bc5",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "sXaVO8f105AJhNZi",
+          "mode": "list",
+          "cachedResultName": "AI News Feed",
+          "cachedResultUrl": "/projects/nr1LDFDwnrXkTIH1/datatables/sXaVO8f105AJhNZi"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        336,
+        1568
+      ],
+      "id": "e921e4b8-9579-49d1-b866-00c66d1481cb",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_706122864622338434"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        1088
+      ],
+      "id": "a0df88a4-ab52-4033-b372-41ae750cee00",
+      "name": "Add label to message",
+      "webhookId": "d8e1e771-0fa8-47d7-8736-4516b0cb02d4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 14,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "751c7965-8cf7-48dd-a7a2-2139824c3605",
+      "name": "Send Daily Summary",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -208,
+        1088
+      ],
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Read RSS News Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "News reader AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Articles Daily": {
+      "main": [
+        [
+          {
+            "node": "Set Tech News RSS Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News reader AI": {
+      "main": [
+        [
+          {
+            "node": "Convert Response to an Email-Friendly Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Response to an Email-Friendly Format": {
+      "main": [
+        [
+          {
+            "node": "Send Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Your topics of interest": {
+      "main": [
+        [
+          {
+            "node": "News reader AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Tech News RSS Feeds": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS News Feeds": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Link no existe en DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contains contentSnippet": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link no existe en DB": {
+      "main": [
+        [
+          {
+            "node": "Añadir Links nuevos a DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir Links nuevos a DB": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Set and Normalize Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Contains contentSnippet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "News reader AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "News reader AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Daily Summary": {
+      "main": [
+        [
+          {
+            "node": "Your topics of interest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Text Classifier": [
+      {
+        "json": {
+          "creator": "Lily Hay Newman",
+          "title": "Apple Announces $2 Million Bug Bounty Reward for the Most Dangerous Exploits",
+          "link": "https://www.wired.com/story/apple-announces-2-million-bug-bounty-reward/",
+          "pubDate": "Fri, 10 Oct 2025 09:15:00 +0000",
+          "dc:creator": "Lily Hay Newman",
+          "content": "With the mercenary spyware industry booming, Apple VP Ivan Krstić tells WIRED that the company is also offering bonuses that could bring the max total reward for iPhone exploits to $5 million.",
+          "contentSnippet": "With the mercenary spyware industry booming, Apple VP Ivan Krstić tells WIRED that the company is also offering bonuses that could bring the max total reward for iPhone exploits to $5 million.",
+          "guid": "68c37cf3123a0371980b71d3",
+          "categories": [
+            "Security",
+            "Security / Cyberattacks and Hacks",
+            "Security / Privacy",
+            "Security / Security News"
+          ],
+          "isoDate": "2025-10-10T09:15:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Jason Koebler",
+          "title": "Meta Tells Its Metaverse Workers to Use AI to ‘Go 5X Faster’",
+          "link": "https://www.wired.com/story/meta-mark-zuckerberg-ai-push-metaverse/",
+          "pubDate": "Fri, 10 Oct 2025 11:00:00 +0000",
+          "dc:creator": "Jason Koebler",
+          "content": "Mark Zuckerberg's metaverse chief is urging employees to adopt AI across every workflow as part of a broader shift inside the company.",
+          "contentSnippet": "Mark Zuckerberg's metaverse chief is urging employees to adopt AI across every workflow as part of a broader shift inside the company.",
+          "guid": "68e837cf1bd312a205f7d293",
+          "categories": [
+            "Business",
+            "Business / Artificial Intelligence"
+          ],
+          "isoDate": "2025-10-10T11:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "\n                    Kai Williams\n                ",
+          "title": "“Like putting on glasses for the first time”—how AI improves earthquake detection",
+          "link": "https://arstechnica.com/science/2025/10/like-putting-on-glasses-for-the-first-time-how-ai-improves-earthquake-detection/",
+          "pubDate": "Fri, 10 Oct 2025 11:00:24 +0000",
+          "content:encoded": "\n                            <p>On January 1, 2008, at 1:59 am in Calipatria, California, an earthquake happened. You haven’t heard of this earthquake; even if you had been living in Calipatria, you wouldn’t have felt anything. It was magnitude -0.53, about the same amount of shaking as a truck passing by. Still, this earthquake is notable, not because it was large but because it was small—and yet we know about it.</p>\n<p>Over the past seven years, AI tools based on computer imaging have almost completely automated one of the fundamental tasks of seismology: detecting earthquakes. What used to be the task of human analysts—and later, simpler computer programs—can now be done automatically and quickly by machine-learning tools.</p>\n<p>These machine-learning tools can detect smaller earthquakes than human analysts, especially in noisy environments like cities. Earthquakes give valuable information about the composition of the Earth and what hazards might occur in the future.</p><p><a href=\"https://arstechnica.com/science/2025/10/like-putting-on-glasses-for-the-first-time-how-ai-improves-earthquake-detection/\">Read full article</a></p>\n<p><a href=\"https://arstechnica.com/science/2025/10/like-putting-on-glasses-for-the-first-time-how-ai-improves-earthquake-detection/#comments\">Comments</a></p>\n\n                        ",
+          "content:encodedSnippet": "On January 1, 2008, at 1:59 am in Calipatria, California, an earthquake happened. You haven’t heard of this earthquake; even if you had been living in Calipatria, you wouldn’t have felt anything. It was magnitude -0.53, about the same amount of shaking as a truck passing by. Still, this earthquake is notable, not because it was large but because it was small—and yet we know about it.\nOver the past seven years, AI tools based on computer imaging have almost completely automated one of the fundamental tasks of seismology: detecting earthquakes. What used to be the task of human analysts—and later, simpler computer programs—can now be done automatically and quickly by machine-learning tools.\nThese machine-learning tools can detect smaller earthquakes than human analysts, especially in noisy environments like cities. Earthquakes give valuable information about the composition of the Earth and what hazards might occur in the future.\nRead full article\nComments",
+          "dc:creator": "\n                    Kai Williams\n                ",
+          "comments": "https://arstechnica.com/science/2025/10/like-putting-on-glasses-for-the-first-time-how-ai-improves-earthquake-detection/#comments",
+          "content": "\n                        AI is “comically good” at detecting small earthquakes—here’s why that matters.\n                    ",
+          "contentSnippet": "AI is “comically good” at detecting small earthquakes—here’s why that matters.",
+          "guid": "https://arstechnica.com/science/2025/10/like-putting-on-glasses-for-the-first-time-how-ai-improves-earthquake-detection/",
+          "categories": [
+            "AI",
+            "Features",
+            "Science",
+            "earthquakes",
+            "seismology"
+          ],
+          "isoDate": "2025-10-10T11:00:24.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Julian Chokkattu",
+          "title": "5 Best Folding Phones (2025), Tested and Reviewed",
+          "link": "https://www.wired.com/gallery/best-folding-phones/",
+          "pubDate": "Fri, 10 Oct 2025 13:30:00 +0000",
+          "dc:creator": "Julian Chokkattu",
+          "content": "Ready to move on from the traditional glass slab? Introduce a hinge into your life with these folding smartphones.",
+          "contentSnippet": "Ready to move on from the traditional glass slab? Introduce a hinge into your life with these folding smartphones.",
+          "guid": "65313a767abc0e8f63e53448",
+          "categories": [
+            "Gear",
+            "Gear / Buying Guides",
+            "Gear / Products / Phones"
+          ],
+          "isoDate": "2025-10-10T13:30:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "\n                    Jonathan M. Gitlin\n                ",
+          "title": "It’s back! The 2027 Chevy Bolt gets an all-new LFP battery, but what else?",
+          "link": "https://arstechnica.com/cars/2025/10/its-back-the-2027-chevy-bolt-gets-an-all-new-lfp-battery-but-what-else/",
+          "pubDate": "Fri, 10 Oct 2025 14:00:04 +0000",
+          "content:encoded": "\n                            <p>The Chevrolet Bolt was one of the earliest electric vehicles to offer well over 200 miles (321 km) of range at a competitive price. For Ars, it was love at <a href=\"https://arstechnica.com/cars/2017/02/its-a-really-good-car-our-first-100-miles-in-a-2017-chevrolet-bolt/\">first drive</a>, and that remained true from model year 2017 through MY2023. On the right tires, it could show a VW Golf GTI <a href=\"https://arstechnica.com/cars/2017/09/turns-out-the-chevy-bolt-is-a-lot-of-fun-to-autocross/\">a thing or two</a>, and while it might have been slow-charging, it could still be <a href=\"https://arstechnica.com/cars/2024/10/superchargers-are-the-reliable-fast-charging-backup-my-chevy-bolt-always-needed/\">a decent road-tripper</a>.</p>\n<p>All of this helped the Bolt become General Motors' best-selling EV, at least until its <a href=\"https://arstechnica.com/cars/2024/10/general-motors-is-ditching-ultium-branding-for-its-ev-batteries/\">used-to-be-called</a> Ultium platform got up and running. And that's despite a <a href=\"https://arstechnica.com/cars/2021/08/gm-recalls-every-chevy-bolt-ever-made-blames-lg-for-faulty-batteries/\">costly recall</a> that required replacing batteries in tens of thousands of Bolts because of some <a href=\"https://arstechnica.com/cars/2021/08/misaligned-factory-robot-may-have-sparked-chevy-bolt-battery-fires/\">badly folded cells</a>. But GM had other plans for the Bolt's factory, and in 2023, it <a href=\"https://arstechnica.com/cars/2023/04/gm-confirms-chevy-bolt-will-die-this-year-making-way-for-electric-pickups/\">announced its impending death</a>.</p>\n<p>The reaction from EV enthusiasts, and Bolt owners in particular, was so overwhelmingly negative that just a few months later, GM CEO Mary Barra backtracked, <a href=\"https://arstechnica.com/cars/2023/07/gm-announces-a-new-ultium-based-chevrolet-bolt-during-q2-report/\">promising to bring the Bolt back</a>, this time with a don't-call-it-Ultium-anymore battery.</p><p><a href=\"https://arstechnica.com/cars/2025/10/its-back-the-2027-chevy-bolt-gets-an-all-new-lfp-battery-but-what-else/\">Read full article</a></p>\n<p><a href=\"https://arstechnica.com/cars/2025/10/its-back-the-2027-chevy-bolt-gets-an-all-new-lfp-battery-but-what-else/#comments\">Comments</a></p>\n\n                        ",
+          "content:encodedSnippet": "The Chevrolet Bolt was one of the earliest electric vehicles to offer well over 200 miles (321 km) of range at a competitive price. For Ars, it was love at first drive, and that remained true from model year 2017 through MY2023. On the right tires, it could show a VW Golf GTI a thing or two, and while it might have been slow-charging, it could still be a decent road-tripper.\nAll of this helped the Bolt become General Motors' best-selling EV, at least until its used-to-be-called Ultium platform got up and running. And that's despite a costly recall that required replacing batteries in tens of thousands of Bolts because of some badly folded cells. But GM had other plans for the Bolt's factory, and in 2023, it announced its impending death.\nThe reaction from EV enthusiasts, and Bolt owners in particular, was so overwhelmingly negative that just a few months later, GM CEO Mary Barra backtracked, promising to bring the Bolt back, this time with a don't-call-it-Ultium-anymore battery.\nRead full article\nComments",
+          "dc:creator": "\n                    Jonathan M. Gitlin\n                ",
+          "comments": "https://arstechnica.com/cars/2025/10/its-back-the-2027-chevy-bolt-gets-an-all-new-lfp-battery-but-what-else/#comments",
+          "content": "\n                        255 miles of range, new infotainment, but where did all the torque go?\n                    ",
+          "contentSnippet": "255 miles of range, new infotainment, but where did all the torque go?",
+          "guid": "https://arstechnica.com/cars/2025/10/its-back-the-2027-chevy-bolt-gets-an-all-new-lfp-battery-but-what-else/",
+          "categories": [
+            "Cars",
+            "Chevrolet Bolt"
+          ],
+          "isoDate": "2025-10-10T14:00:04.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Natasha Bernal",
+          "title": "Google Search Could Change Forever in the UK",
+          "link": "https://www.wired.com/story/uk-watchdog-targets-google-search-in-competition-crackdown/",
+          "pubDate": "Fri, 10 Oct 2025 14:16:09 +0000",
+          "dc:creator": "Natasha Bernal",
+          "content": "New regulation from the UK’s competition authority means Google may be forced to make major changes in the way that people use its search engine.",
+          "contentSnippet": "New regulation from the UK’s competition authority means Google may be forced to make major changes in the way that people use its search engine.",
+          "guid": "68e793f4ea8ed1778b91403b",
+          "categories": [
+            "Business",
+            "Business / Big Tech",
+            "Business / Regulation"
+          ],
+          "isoDate": "2025-10-10T14:16:09.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "\n                    Ashley Belanger\n                ",
+          "title": "OpenAI will stop saving most ChatGPT users’ deleted chats",
+          "link": "https://arstechnica.com/tech-policy/2025/10/openai-no-longer-forced-to-save-deleted-chats-but-some-users-still-affected/",
+          "pubDate": "Fri, 10 Oct 2025 14:58:29 +0000",
+          "content:encoded": "\n                            <p>OpenAI will finally stop saving most ChatGPT users' deleted and temporary chats after a court fight compelled the AI firm to <a href=\"https://arstechnica.com/tech-policy/2025/06/openai-confronts-user-panic-over-court-ordered-retention-of-chatgpt-logs/\">retain the logs \"indefinitely.\"</a></p>\n<p>The preservation order came in a lawsuit filed by The New York Times and other news plaintiffs, who alleged that user attempts to skirt paywalls with ChatGPT would most likely set their chats as temporary or delete the logs.</p>\n<p>OpenAI <a href=\"https://arstechnica.com/tech-policy/2025/06/openai-says-court-forcing-it-to-save-all-chatgpt-logs-is-a-privacy-nightmare/\">vowed to fight the order</a>, defending its policies and users' privacy, <a href=\"https://arstechnica.com/tech-policy/2025/08/openai-offers-20-million-user-chats-in-chatgpt-lawsuit-nyt-wants-120-million/\">but it lost</a>. By July, news plaintiffs <a href=\"https://arstechnica.com/tech-policy/2025/07/nyt-to-start-searching-deleted-chatgpt-logs-after-beating-openai-in-court/\">started digging through the logs</a>—which only preserved ChatGPT's outputs—while a few ChatGPT users' efforts to intervene were consistently denied, as they were deemed non-parties to the lawsuit.</p><p><a href=\"https://arstechnica.com/tech-policy/2025/10/openai-no-longer-forced-to-save-deleted-chats-but-some-users-still-affected/\">Read full article</a></p>\n<p><a href=\"https://arstechnica.com/tech-policy/2025/10/openai-no-longer-forced-to-save-deleted-chats-but-some-users-still-affected/#comments\">Comments</a></p>\n\n                        ",
+          "content:encodedSnippet": "OpenAI will finally stop saving most ChatGPT users' deleted and temporary chats after a court fight compelled the AI firm to retain the logs \"indefinitely.\"\nThe preservation order came in a lawsuit filed by The New York Times and other news plaintiffs, who alleged that user attempts to skirt paywalls with ChatGPT would most likely set their chats as temporary or delete the logs.\nOpenAI vowed to fight the order, defending its policies and users' privacy, but it lost. By July, news plaintiffs started digging through the logs—which only preserved ChatGPT's outputs—while a few ChatGPT users' efforts to intervene were consistently denied, as they were deemed non-parties to the lawsuit.\nRead full article\nComments",
+          "dc:creator": "\n                    Ashley Belanger\n                ",
+          "comments": "https://arstechnica.com/tech-policy/2025/10/openai-no-longer-forced-to-save-deleted-chats-but-some-users-still-affected/#comments",
+          "content": "\n                        Court ends controversial order forcing OpenAI to save deleted ChatGPT logs.\n                    ",
+          "contentSnippet": "Court ends controversial order forcing OpenAI to save deleted ChatGPT logs.",
+          "guid": "https://arstechnica.com/tech-policy/2025/10/openai-no-longer-forced-to-save-deleted-chats-but-some-users-still-affected/",
+          "categories": [
+            "AI",
+            "Policy"
+          ],
+          "isoDate": "2025-10-10T14:58:29.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "\n                    Kyle Orland\n                ",
+          "title": "AMD and Sony’s PS6 chipset aims to rethink the current graphics pipeline",
+          "link": "https://arstechnica.com/gaming/2025/10/amd-and-sony-tease-new-chip-architecture-ahead-of-playstation-6/",
+          "pubDate": "Fri, 10 Oct 2025 16:45:49 +0000",
+          "content:encoded": "\n                            <p>It feels like it was just yesterday that Sony hardware architect Mark Cerny was <a href=\"https://arstechnica.com/gaming/2019/04/sonys-ps4-successor-sports-3d-audio-tech-faster-ssd-storage/\">first teasing Sony's \"PS4 successor\"</a> and its \"enhanced ray-tracing capabilities\" powered by new AMD chips. Now that we're <a href=\"https://arstechnica.com/gaming/2020/11/playstation-5-review-more-of-a-generational-hop-than-a-leap/\">nearly five full years into the PS5 era</a>, it's time for Sony and AMD to start teasing the new chips that will power what Cerny calls \"a future console in a few years' time.\"</p>\n<p>In <a href=\"https://www.youtube.com/watch?v=1LCMzw-_dMw\">a quick nine-minute video posted Thursday</a>, Cerny sat down with Jack Huynh, the senior VP and general manager of AMD's Computing and Graphics Group, to talk about \"Project Amethyst,\" a co-engineering effort between both companies that was <a href=\"https://x.com/JackMHuynh/status/1940049247920943136\">also teased back in July</a>. And while that Project Amethyst hardware currently only exists in the form of a simulation, Cerny said that the \"results are quite promising\" for a project that's still in the \"early days.\"</p>\n<h2>Mo’ ML, fewer problems?</h2>\n<p>Project Amethyst is focused on going beyond traditional rasterization techniques that don't scale well when you try to \"brute force that with raw power alone,\" Huynh said in the video. Instead, the new architecture is focused on more efficient running of the kinds of machine-learning-based neural networks behind <a href=\"https://arstechnica.com/gadgets/2025/02/amds-fsr-4-upscaling-is-exclusive-to-90-series-radeon-gpus-wont-work-on-other-cards/\">AMD's FSR upscaling technology</a> and <a href=\"https://arstechnica.com/gaming/2024/09/sony-announces-ps5-pro-a-700-graphics-workhorse-available-nov-7/\">Sony's similar PSSR system</a>.</p><p><a href=\"https://arstechnica.com/gaming/2025/10/amd-and-sony-tease-new-chip-architecture-ahead-of-playstation-6/\">Read full article</a></p>\n<p><a href=\"https://arstechnica.com/gaming/2025/10/amd-and-sony-tease-new-chip-architecture-ahead-of-playstation-6/#comments\">Comments</a></p>\n\n                        ",
+          "content:encodedSnippet": "It feels like it was just yesterday that Sony hardware architect Mark Cerny was first teasing Sony's \"PS4 successor\" and its \"enhanced ray-tracing capabilities\" powered by new AMD chips. Now that we're nearly five full years into the PS5 era, it's time for Sony and AMD to start teasing the new chips that will power what Cerny calls \"a future console in a few years' time.\"\nIn a quick nine-minute video posted Thursday, Cerny sat down with Jack Huynh, the senior VP and general manager of AMD's Computing and Graphics Group, to talk about \"Project Amethyst,\" a co-engineering effort between both companies that was also teased back in July. And while that Project Amethyst hardware currently only exists in the form of a simulation, Cerny said that the \"results are quite promising\" for a project that's still in the \"early days.\"\nMo’ ML, fewer problems?\nProject Amethyst is focused on going beyond traditional rasterization techniques that don't scale well when you try to \"brute force that with raw power alone,\" Huynh said in the video. Instead, the new architecture is focused on more efficient running of the kinds of machine-learning-based neural networks behind AMD's FSR upscaling technology and Sony's similar PSSR system.\nRead full article\nComments",
+          "dc:creator": "\n                    Kyle Orland\n                ",
+          "comments": "https://arstechnica.com/gaming/2025/10/amd-and-sony-tease-new-chip-architecture-ahead-of-playstation-6/#comments",
+          "content": "\n                        Project Amethyst focuses on efficient machine learning, new compression techniques.\n                    ",
+          "contentSnippet": "Project Amethyst focuses on efficient machine learning, new compression techniques.",
+          "guid": "https://arstechnica.com/gaming/2025/10/amd-and-sony-tease-new-chip-architecture-ahead-of-playstation-6/",
+          "categories": [
+            "Gaming",
+            "AMD",
+            "chipset",
+            "GPU",
+            "pipeline",
+            "raytracing",
+            "Sony"
+          ],
+          "isoDate": "2025-10-10T16:45:49.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "\n                    Ryan Whitwam\n                ",
+          "title": "UK regulators plan to force Google changes under new competition law",
+          "link": "https://arstechnica.com/google/2025/10/uk-antitrust-regulator-takes-aim-at-googles-search-dominance/",
+          "pubDate": "Fri, 10 Oct 2025 16:58:36 +0000",
+          "content:encoded": "\n                            <p>Google is facing multiple antitrust actions in the US, and European regulators have been similarly tightening the screws. You can now add the UK to the list of Google's governmental worries. The country's antitrust regulator, known as the Competition and Markets Authority (CMA), has confirmed that Google has \"strategic market status,\" paving the way to more limits on how Google does business in the UK. Naturally, Google objects to this course of action.</p>\n<p>The designation is connected to the UK's new digital markets competition regime, which was enacted at the beginning of the year. Shortly after, the CMA announced it was conducting an investigation into whether Google should be designated with strategic market status. The outcome of that process is a resounding \"yes.\"</p>\n<p>This label does not mean Google has done anything illegal or that it is subject to immediate regulation. It simply means the company has \"substantial and entrenched market power\" in one or more areas under the purview of the CMA. Specifically, the agency has found that Google is dominant in search and search advertising, holding a greater than 90 percent share of Internet searches in the UK.</p><p><a href=\"https://arstechnica.com/google/2025/10/uk-antitrust-regulator-takes-aim-at-googles-search-dominance/\">Read full article</a></p>\n<p><a href=\"https://arstechnica.com/google/2025/10/uk-antitrust-regulator-takes-aim-at-googles-search-dominance/#comments\">Comments</a></p>\n\n                        ",
+          "content:encodedSnippet": "Google is facing multiple antitrust actions in the US, and European regulators have been similarly tightening the screws. You can now add the UK to the list of Google's governmental worries. The country's antitrust regulator, known as the Competition and Markets Authority (CMA), has confirmed that Google has \"strategic market status,\" paving the way to more limits on how Google does business in the UK. Naturally, Google objects to this course of action.\nThe designation is connected to the UK's new digital markets competition regime, which was enacted at the beginning of the year. Shortly after, the CMA announced it was conducting an investigation into whether Google should be designated with strategic market status. The outcome of that process is a resounding \"yes.\"\nThis label does not mean Google has done anything illegal or that it is subject to immediate regulation. It simply means the company has \"substantial and entrenched market power\" in one or more areas under the purview of the CMA. Specifically, the agency has found that Google is dominant in search and search advertising, holding a greater than 90 percent share of Internet searches in the UK.\nRead full article\nComments",
+          "dc:creator": "\n                    Ryan Whitwam\n                ",
+          "comments": "https://arstechnica.com/google/2025/10/uk-antitrust-regulator-takes-aim-at-googles-search-dominance/#comments",
+          "content": "\n                        The CMA will focus on regulating search and search advertising, but not Gemini (for now).\n                    ",
+          "contentSnippet": "The CMA will focus on regulating search and search advertising, but not Gemini (for now).",
+          "guid": "https://arstechnica.com/google/2025/10/uk-antitrust-regulator-takes-aim-at-googles-search-dominance/",
+          "categories": [
+            "Google",
+            "Tech",
+            "antitrust",
+            "google",
+            "search",
+            "United Kindgom"
+          ],
+          "isoDate": "2025-10-10T16:58:36.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Ivan Mehta",
+          "title": "Prezent raises $30 million to acquire AI services firms — starting with founder’s other company",
+          "link": "https://techcrunch.com/2025/10/10/prezent-raises-30-million-to-acquire-ai-services-firms-starting-with-founders-other-company/",
+          "pubDate": "Fri, 10 Oct 2025 17:11:29 +0000",
+          "dc:creator": "Ivan Mehta",
+          "content": "Months after raising $20 million, enterprise-focused AI presentation startup Prezent is raising $30 million for acquisitions. ",
+          "contentSnippet": "Months after raising $20 million, enterprise-focused AI presentation startup Prezent is raising $30 million for acquisitions.",
+          "guid": "https://techcrunch.com/?p=3054838",
+          "categories": [
+            "AI",
+            "Fundraising",
+            "greycroft",
+            "India",
+            "Zoom Ventures",
+            "AI presentations",
+            "Prezent"
+          ],
+          "isoDate": "2025-10-10T17:11:29.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Russell Brandom",
+          "title": "The billion-dollar infrastructure deals powering the AI boom",
+          "link": "https://techcrunch.com/2025/10/10/the-billion-dollar-infrastructure-deals-powering-the-ai-boom/",
+          "pubDate": "Fri, 10 Oct 2025 17:55:12 +0000",
+          "dc:creator": "Russell Brandom",
+          "content": "Here's everything we know about the biggest AI infrastructure projects, including major spending from Meta, Oracle, Microsoft, Google, and OpenAI.",
+          "contentSnippet": "Here's everything we know about the biggest AI infrastructure projects, including major spending from Meta, Oracle, Microsoft, Google, and OpenAI.",
+          "guid": "https://techcrunch.com/?p=3048567",
+          "categories": [
+            "AI",
+            "Microsoft",
+            "oracle",
+            "nvidia",
+            "Softbank",
+            "Meta",
+            "stargate",
+            "evergreens"
+          ],
+          "isoDate": "2025-10-10T17:55:12.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Zoë Schiffer, Leah Feiger",
+          "title": "WIRED Roundup: Are We In An AI Bubble?",
+          "link": "https://www.wired.com/story/uncanny-valley-podcast-wired-roundup-are-we-in-an-ai-bubble/",
+          "pubDate": "Fri, 10 Oct 2025 19:50:22 +0000",
+          "dc:creator": "Zoë Schiffer, Leah Feiger",
+          "content": "In this episode of Uncanny Valley, we talk about one author's journey to flee the US, social media surveillance, chatbots and the world of AI, and conspiracy theories for an autism cure.",
+          "contentSnippet": "In this episode of Uncanny Valley, we talk about one author's journey to flee the US, social media surveillance, chatbots and the world of AI, and conspiracy theories for an autism cure.",
+          "guid": "68e6f275afdf03bdcc2512cb",
+          "categories": [
+            "Business",
+            "Business / Artificial Intelligence"
+          ],
+          "isoDate": "2025-10-10T19:50:22.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Theresa Loconsolo",
+          "title": "Why Deloitte is betting big on AI despite a $10M refund",
+          "link": "https://techcrunch.com/video/why-deloitte-is-betting-big-on-ai-despite-a-10m-refund/",
+          "pubDate": "Fri, 10 Oct 2025 19:54:46 +0000",
+          "dc:creator": "Theresa Loconsolo",
+          "content": "AI companies are making their much-anticipated enterprise plays, but the results are wildly inconsistent. Just this week, Deloitte announced it&#8217;s rolling out Anthropic&#8217;s Claude to all 500,000 employees. On the very same day, the Australian government forced Deloitte to refund a contract because their AI-generated report was riddled with fake citations. It&#8217;s a perfect snapshot [&#8230;]",
+          "contentSnippet": "AI companies are making their much-anticipated enterprise plays, but the results are wildly inconsistent. Just this week, Deloitte announced it’s rolling out Anthropic’s Claude to all 500,000 employees. On the very same day, the Australian government forced Deloitte to refund a contract because their AI-generated report was riddled with fake citations. It’s a perfect snapshot […]",
+          "guid": "https://techcrunch.com/?post_type=tc_video&p=3056561",
+          "categories": [
+            "Venture",
+            "AI",
+            "deloitte",
+            "Tesla",
+            "Equity podcast",
+            "Anthropic"
+          ],
+          "isoDate": "2025-10-10T19:54:46.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Sarah Perez",
+          "title": "It’s not too late for Apple to get AI right",
+          "link": "https://techcrunch.com/2025/10/11/its-not-too-late-for-apple-to-get-ai-right/",
+          "pubDate": "Sat, 11 Oct 2025 15:00:00 +0000",
+          "dc:creator": "Sarah Perez",
+          "content": "Apple still has a shot at leading the AI-powered app era. As OpenAI launches its ChatGPT app platform, Apple’s smarter Siri and deep ecosystem could keep it ahead.\n",
+          "contentSnippet": "Apple still has a shot at leading the AI-powered app era. As OpenAI launches its ChatGPT app platform, Apple’s smarter Siri and deep ecosystem could keep it ahead.",
+          "guid": "https://techcrunch.com/?p=3055191",
+          "categories": [
+            "TC",
+            "AI",
+            "Apps",
+            "app industry",
+            "app store",
+            "Apple",
+            "artificial inteligence",
+            "OpenAI",
+            "siri"
+          ],
+          "isoDate": "2025-10-11T15:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Anthony Ha",
+          "title": "Ready or not, enterprises are betting on AI",
+          "link": "https://techcrunch.com/2025/10/11/ready-or-not-enterprises-are-betting-on-ai/",
+          "pubDate": "Sat, 11 Oct 2025 17:52:03 +0000",
+          "dc:creator": "Anthony Ha",
+          "content": "This has been a big week for AI companies signing enterprise deals, with Zendesk unveiling new AI agents that are supposed to be able to resolve 80% of customer service issues, Anthropic and IBM announcing a strategic partnership, and Deloitte also announcing a deal with Anthropic.",
+          "contentSnippet": "This has been a big week for AI companies signing enterprise deals, with Zendesk unveiling new AI agents that are supposed to be able to resolve 80% of customer service issues, Anthropic and IBM announcing a strategic partnership, and Deloitte also announcing a deal with Anthropic.",
+          "guid": "https://techcrunch.com/?p=3056676",
+          "categories": [
+            "AI",
+            "Enterprise",
+            "Zendesk",
+            "deloitte"
+          ],
+          "isoDate": "2025-10-11T17:52:03.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Anthony Ha",
+          "title": "Thinking Machines Lab co-founder Andrew Tulloch heads to Meta",
+          "link": "https://techcrunch.com/2025/10/11/thinking-machines-lab-co-founder-andrew-tulloch-heads-to-meta/",
+          "pubDate": "Sat, 11 Oct 2025 19:10:37 +0000",
+          "dc:creator": "Anthony Ha",
+          "content": "AI researcher Andrew Tulloch reportedly announced his departure to employees in a message on Friday. ",
+          "contentSnippet": "AI researcher Andrew Tulloch reportedly announced his departure to employees in a message on Friday.",
+          "guid": "https://techcrunch.com/?p=3056682",
+          "categories": [
+            "AI",
+            "Startups",
+            "Meta",
+            "Thinking Machines Lab",
+            "andrew tulloch"
+          ],
+          "isoDate": "2025-10-11T19:10:37.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Ben Brubaker",
+          "title": "A New Algorithm Makes It Faster to Find the Shortest Paths",
+          "link": "https://www.wired.com/story/new-method-is-the-fastest-way-to-find-the-best-routes/",
+          "pubDate": "Sun, 12 Oct 2025 11:00:00 +0000",
+          "dc:creator": "Ben Brubaker",
+          "content": "A canonical problem in computer science is to find the shortest route to every point in a network. A new approach beats the classic algorithm taught in textbooks.",
+          "contentSnippet": "A canonical problem in computer science is to find the shortest route to every point in a network. A new approach beats the classic algorithm taught in textbooks.",
+          "guid": "68cd89237667e13851183f10",
+          "categories": [
+            "Science",
+            "Science / Physics and Math"
+          ],
+          "isoDate": "2025-10-12T11:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Marina Temkin",
+          "title": "Nvidia’s AI empire: A look at its top startup investments",
+          "link": "https://techcrunch.com/2025/10/12/nvidias-ai-empire-a-look-at-its-top-startup-investments/",
+          "pubDate": "Sun, 12 Oct 2025 15:30:28 +0000",
+          "dc:creator": "Marina Temkin",
+          "content": "Over the last two years, Nvidia has used its ballooning fortunes to invest in over 100 AI startups. Here are the giant semiconductor's largest investments.",
+          "contentSnippet": "Over the last two years, Nvidia has used its ballooning fortunes to invest in over 100 AI startups. Here are the giant semiconductor's largest investments.",
+          "guid": "https://techcrunch.com/?p=2942343",
+          "categories": [
+            "AI",
+            "Fundraising",
+            "Startups",
+            "nvidia",
+            "corporate venture arms",
+            "evergreens"
+          ],
+          "isoDate": "2025-10-12T15:30:28.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Rana Alsoufi ",
+          "title": "The AI Slur ‘Clanker’ Has Become a Cover for Racist TikTok Skits",
+          "link": "https://www.wired.com/story/the-ai-slur-clanker-has-become-a-cover-for-racist-tiktok-skits/",
+          "pubDate": "Thu, 09 Oct 2025 10:00:00 +0000",
+          "dc:creator": "Rana Alsoufi ",
+          "content": "The online trend takes a comedic approach to spreading anti-AI messaging, but some creators are using racist references to make their point.",
+          "contentSnippet": "The online trend takes a comedic approach to spreading anti-AI messaging, but some creators are using racist references to make their point.",
+          "guid": "68db0226d28a4c829d5f853f",
+          "categories": [
+            "Culture",
+            "Culture / Digital Culture"
+          ],
+          "isoDate": "2025-10-09T10:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Lauren Goode, Louise Matsakis, Zeyi Yang",
+          "title": "How China Is Hoping to Attract Tech Talent",
+          "link": "https://www.wired.com/story/uncanny-valley-podcast-how-china-is-hoping-to-attract-tech-talent/",
+          "pubDate": "Thu, 09 Oct 2025 20:39:15 +0000",
+          "dc:creator": "Lauren Goode, Louise Matsakis, Zeyi Yang",
+          "content": "In this episode of Uncanny Valley, we uncover how America's new $100,000 H-1B golden visa has thrown tech workers and their employers into chaos.",
+          "contentSnippet": "In this episode of Uncanny Valley, we uncover how America's new $100,000 H-1B golden visa has thrown tech workers and their employers into chaos.",
+          "guid": "68e421e212ed85bfcf40b6a1",
+          "categories": [
+            "Business",
+            "Business / Regulation",
+            "Business / Tech Culture"
+          ],
+          "isoDate": "2025-10-09T20:39:15.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Caiwei Chen",
+          "title": "AI toys are all the rage in China—and now they’re appearing on shelves in the US too",
+          "link": "https://www.technologyreview.com/2025/10/07/1125191/ai-toys-in-china/",
+          "pubDate": "Tue, 07 Oct 2025 16:51:02 +0000",
+          "content:encoded": "\n<p>Kids have always played with and talked to stuffed animals. But now their toys can talk back, thanks to a wave of companies that are fitting children’s playthings with chatbots and voice assistants.&nbsp;</p>\n\n\n\n<p>It’s a trend that has particularly taken off in China: A recent report by the Shenzhen Toy Industry Association and JD.com predicts that the sector will surpass ¥100 billion ($14 billion) by 2030, growing faster than almost any other branch of consumer AI. According to the Chinese corporation registration database Qichamao, there are over 1,500 AI toy companies operating in China as of October 2025.</p>\n\n\n\n<p>One of the latest entrants to the market is a toy called BubblePal, a device the size of a Ping-Pong ball that clips onto a child’s favorite stuffed animal and makes it “talk.” The gadget comes with a smartphone app that lets parents switch between 39 characters, from Disney’s Elsa to the Chinese cartoon classic Nezha. It costs $149, and 200,000 units have been sold since it launched last summer. It’s made by the Chinese company Haivivi and runs on DeepSeek’s large language models.&nbsp;</p>\n\n\n\n<p>Other companies are approaching the market differently. FoloToy, another Chinese startup, allows parents to customize a bear, bunny, or cactus toy by training it to speak with their own voice and speech pattern. FoloToy reported selling more than 20,000 of its AI-equipped plush toys in the first quarter of 2025, nearly equaling its total sales for 2024, and it projects sales of 300,000 units this year.&nbsp;</p>\n\n\n\n\n\n<p>But Chinese AI toy companies have their sights set beyond the nation’s borders. BubblePal was launched in the US in December 2024 and is now also available in Canada and the UK. And FoloToy is now sold in more than 10 countries, including the US, UK, Canada, Brazil, Germany, and Thailand. Rui Ma, a China tech analyst at AlphaWatch.AI, says that AI devices for children make particular sense in China, where there is already a well-established market for kid-focused educational electronics—a market that does not exist to the same extent globally. FoloToy’s CEO, Kong Miaomiao, told the Chinese outlet Baijing Chuhai that outside China, his firm is still just “reaching early adopters who are curious about AI.”</p>\n\n\n\n<p>China’s AI toy boom builds on decades of consumer electronics designed specifically for children. As early as the 1990s, companies such as BBK popularized devices like electronic dictionaries and “study machines,” marketed to parents as educational aids. These toy-electronics hybrids read aloud, tell interactive stories, and simulate the role of a playmate.</p>\n\n\n\n<p>The competition is heating up, however—US companies have also started to develop and sell AI toys. The musician Grimes helped to create Grok, a plush toy that chats with kids and adapts to their personality. Toy giant Mattel is working with OpenAI to bring conversational AI to brands like Barbie and Hot Wheels, with the first products expected to be announced later this year.</p>\n\n\n\n<p>However, reviews from parents who’ve bought AI toys in China are mixed. Although many appreciate the fact they are screen-free and come with strict parental controls, some parents say their AI capabilities can be glitchy, leading children to tire of them easily.&nbsp;</p>\n\n\n\n<p>Penny Huang, based in Beijing, bought a BubblePal for her five-year-old daughter, who is cared for mostly by grandparents. Huang hoped that the toy could make her less lonely and reduce her constant requests to play with adults’ smartphones. But the novelty wore off quickly.</p>\n\n\n\n<p>“The responses are too long and wordy. My daughter quickly loses patience,” says Huang, “It [the role-play] doesn’t feel immersive—just a voice that sometimes sounds out of place.”&nbsp;</p>\n\n\n\n<p>Another parent who uses BubblePal, Hongyi Li, found the voice recognition lagging: “Children’s speech is fragmented and unclear. The toy frequently interrupts my kid or misunderstands what she says. It also still requires pressing a button to interact, which can be hard for toddlers.”&nbsp;</p>\n\n\n\n<p>Huang recently listed her BubblePal for sale on Xianyu, a secondhand marketplace. “This is just like one of the many toys that my daughter plays for five minutes then gets tired of,” she says. “She wants to play with my phone more than anything else.”</p>\n\n\n\n<p></p>\n",
+          "content:encodedSnippet": "Kids have always played with and talked to stuffed animals. But now their toys can talk back, thanks to a wave of companies that are fitting children’s playthings with chatbots and voice assistants. \nIt’s a trend that has particularly taken off in China: A recent report by the Shenzhen Toy Industry Association and JD.com predicts that the sector will surpass ¥100 billion ($14 billion) by 2030, growing faster than almost any other branch of consumer AI. According to the Chinese corporation registration database Qichamao, there are over 1,500 AI toy companies operating in China as of October 2025.\nOne of the latest entrants to the market is a toy called BubblePal, a device the size of a Ping-Pong ball that clips onto a child’s favorite stuffed animal and makes it “talk.” The gadget comes with a smartphone app that lets parents switch between 39 characters, from Disney’s Elsa to the Chinese cartoon classic Nezha. It costs $149, and 200,000 units have been sold since it launched last summer. It’s made by the Chinese company Haivivi and runs on DeepSeek’s large language models. \nOther companies are approaching the market differently. FoloToy, another Chinese startup, allows parents to customize a bear, bunny, or cactus toy by training it to speak with their own voice and speech pattern. FoloToy reported selling more than 20,000 of its AI-equipped plush toys in the first quarter of 2025, nearly equaling its total sales for 2024, and it projects sales of 300,000 units this year. \nBut Chinese AI toy companies have their sights set beyond the nation’s borders. BubblePal was launched in the US in December 2024 and is now also available in Canada and the UK. And FoloToy is now sold in more than 10 countries, including the US, UK, Canada, Brazil, Germany, and Thailand. Rui Ma, a China tech analyst at AlphaWatch.AI, says that AI devices for children make particular sense in China, where there is already a well-established market for kid-focused educational electronics—a market that does not exist to the same extent globally. FoloToy’s CEO, Kong Miaomiao, told the Chinese outlet Baijing Chuhai that outside China, his firm is still just “reaching early adopters who are curious about AI.”\nChina’s AI toy boom builds on decades of consumer electronics designed specifically for children. As early as the 1990s, companies such as BBK popularized devices like electronic dictionaries and “study machines,” marketed to parents as educational aids. These toy-electronics hybrids read aloud, tell interactive stories, and simulate the role of a playmate.\nThe competition is heating up, however—US companies have also started to develop and sell AI toys. The musician Grimes helped to create Grok, a plush toy that chats with kids and adapts to their personality. Toy giant Mattel is working with OpenAI to bring conversational AI to brands like Barbie and Hot Wheels, with the first products expected to be announced later this year.\nHowever, reviews from parents who’ve bought AI toys in China are mixed. Although many appreciate the fact they are screen-free and come with strict parental controls, some parents say their AI capabilities can be glitchy, leading children to tire of them easily. \nPenny Huang, based in Beijing, bought a BubblePal for her five-year-old daughter, who is cared for mostly by grandparents. Huang hoped that the toy could make her less lonely and reduce her constant requests to play with adults’ smartphones. But the novelty wore off quickly.\n“The responses are too long and wordy. My daughter quickly loses patience,” says Huang, “It [the role-play] doesn’t feel immersive—just a voice that sometimes sounds out of place.” \nAnother parent who uses BubblePal, Hongyi Li, found the voice recognition lagging: “Children’s speech is fragmented and unclear. The toy frequently interrupts my kid or misunderstands what she says. It also still requires pressing a button to interact, which can be hard for toddlers.” \nHuang recently listed her BubblePal for sale on Xianyu, a secondhand marketplace. “This is just like one of the many toys that my daughter plays for five minutes then gets tired of,” she says. “She wants to play with my phone more than anything else.”",
+          "dc:creator": "Caiwei Chen",
+          "content": "Kids have always played with and talked to stuffed animals. But now their toys can talk back, thanks to a wave of companies that are fitting children’s playthings with chatbots and voice assistants.&#160; It’s a trend that has particularly taken off in China: A recent report by the Shenzhen Toy Industry Association and JD.com predicts&#8230;",
+          "contentSnippet": "Kids have always played with and talked to stuffed animals. But now their toys can talk back, thanks to a wave of companies that are fitting children’s playthings with chatbots and voice assistants.  It’s a trend that has particularly taken off in China: A recent report by the Shenzhen Toy Industry Association and JD.com predicts…",
+          "guid": "https://www.technologyreview.com/?p=1125191",
+          "categories": [
+            "Artificial intelligence",
+            "App"
+          ],
+          "isoDate": "2025-10-07T16:51:02.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Kat Tenbarge",
+          "title": "Fans Call on Taylor Swift to ‘Do Better’ After Accusations of Using AI for Promo Videos",
+          "link": "https://www.wired.com/story/taylor-swift-swifties-against-ai-viral/",
+          "pubDate": "Wed, 08 Oct 2025 20:53:21 +0000",
+          "dc:creator": "Kat Tenbarge",
+          "content": "A scavenger hunt campaign to promote Taylor Swift’s new album, The Life of a Showgirl, resulted in a viral #SwiftiesAgainstAI campaign.",
+          "contentSnippet": "A scavenger hunt campaign to promote Taylor Swift’s new album, The Life of a Showgirl, resulted in a viral #SwiftiesAgainstAI campaign.",
+          "guid": "68e578a28460fda15cedaf70",
+          "categories": [
+            "Culture",
+            "Culture / Digital Culture",
+            "Culture / Music"
+          ],
+          "isoDate": "2025-10-08T20:53:21.000Z"
+        }
+      }
+    ],
+    "Send Daily Summary": [
+      {
+        "json": {
+          "timestamp": "2025-11-03T14:30:34.005+01:00",
+          "Readable date": "November 3rd 2025, 2:30:34 pm",
+          "Readable time": "2:30:34 pm",
+          "Day of week": "Monday",
+          "Year": "2025",
+          "Month": "November",
+          "Day of month": "03",
+          "Hour": "14",
+          "Minute": "30",
+          "Second": "34",
+          "Timezone": "Europe/Berlin (UTC+01:00)"
+        }
+      }
+    ]
+  },
+  "versionId": "c5e25b40-2948-42e7-9c96-d35a06a7ae53",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-05T16:50:42.316Z",
+      "createdAt": "2025-11-05T16:50:42.316Z",
+      "role": "workflow:owner",
+      "workflowId": "CW8yZ2PrDLYKra74",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
