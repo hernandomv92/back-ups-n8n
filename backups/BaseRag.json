@@ -1,0 +1,703 @@
+{
+  "updatedAt": "2025-09-17T05:40:50.000Z",
+  "createdAt": "2025-09-17T05:39:52.886Z",
+  "id": "AMIYBjtDxeFTvuh1",
+  "name": "BaseRag",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C0959HE2A95",
+          "mode": "list",
+          "cachedResultName": "conocimiento"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "f66e6052-88ab-499f-8efd-ad86c14fdc81",
+      "name": "Slack Trigger",
+      "webhookId": "e067735d-1065-4d5d-86c2-9e3b9cf6c4bc"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        240
+      ],
+      "id": "7e848d35-3ba5-4810-8627-23075b5c78e5",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.user }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        240
+      ],
+      "id": "95c82615-e01c-4ca0-bd23-d23fcc65a2ca",
+      "name": "Postgres Chat Memory"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Extraer PDF').item.json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "tipo",
+                "value": "={{ $('On form submission').item.json.Documento.filename }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "554b9fd6-4e06-447b-9e96-2b9261c433e5",
+      "name": "Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        560,
+        -336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "formTitle": "Conocimiento n8n",
+        "formDescription": "=Selecciona el documento que quires cargar.\n",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Documento",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        -432
+      ],
+      "id": "6ca0d13a-a5e2-4738-a3d9-19cc4704c5fc",
+      "name": "On form submission",
+      "webhookId": "7bbb414a-d50d-4f00-8984-4bb074c211fd"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Documento",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -432
+      ],
+      "id": "453ddc27-3dda-4901-8444-5a8bc645ac44",
+      "name": "Extraer PDF"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/conocimiento/points/delete",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"filter\": {\n    \"must\": [\n      {\n        \"key\": \"metadata.tipo\",\n        \"match\": { \"value\": \"{{ $('On form submission').item.json.Documento.filename }}\" }\n      }\n    ]\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        -432
+      ],
+      "id": "0a83665a-fd3f-44a8-937f-392919718e4c",
+      "name": "Borrar Documento Existente",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -464
+      ],
+      "id": "c1e6de2d-7681-4950-a46b-85c29656dc5d",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "¡Documento cargado!",
+        "completionMessage": "El documento ha sido cargado correctamente",
+        "options": {
+          "formTitle": "Conocimiento n8n"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -464
+      ],
+      "id": "d3f77996-911c-4f3c-9668-b2267d2dd8bf",
+      "name": "Form",
+      "webhookId": "0471e1cf-608b-4466-b436-a3080941e2ca"
+    },
+    {
+      "parameters": {
+        "chunkSize": 400,
+        "chunkOverlap": 100,
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -224
+      ],
+      "id": "19ca6afd-abc6-45a4-98e7-e95e5d6f7cea",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "conocimiento",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "04076697-0338-4140-878a-31978e040402",
+      "name": "Qdrant Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [
+        448,
+        -464
+      ],
+      "executeOnce": false,
+      "retryOnFail": true,
+      "typeVersion": 1,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        -272
+      ],
+      "id": "f6a8cb13-4e6d-48a5-98e0-819601139617",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        336
+      ],
+      "id": "9ea4e4e8-657f-41e7-aeb1-bc8b22801f22",
+      "name": "Embeddings OpenAI1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Utiliza esta herramienta para consultar tu conocimiento.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "conocimiento",
+          "mode": "list",
+          "cachedResultName": "conocimiento"
+        },
+        "topK": 20,
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        224
+      ],
+      "id": "f5820380-a859-4fb9-8426-5e5b17e981bb",
+      "name": "Conocimiento"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0959HE2A95",
+          "mode": "list",
+          "cachedResultName": "conocimiento"
+        },
+        "text": "={{ $json.text }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack Trigger').item.json.event_ts }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1168,
+        0
+      ],
+      "id": "8407da4e-75d3-4488-b36e-3f167ef3fea5",
+      "name": "Send a message",
+      "webhookId": "348674c5-4888-4f48-a65f-ec99edee1196"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "dd94a5d6-71e9-442f-931d-fb93d3c04d2c",
+      "name": "Think"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        592,
+        144
+      ],
+      "id": "0f609019-0451-436a-abb9-87d3f3ae98d3",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {
+          "frequencyPenalty": 0,
+          "presencePenalty": 0,
+          "temperature": 0.1,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        192
+      ],
+      "id": "cc8512de-3f61-4b10-98c0-8e71eb6f9b1b",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {
+          "frequencyPenalty": 0,
+          "presencePenalty": 0,
+          "temperature": 0.1,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        240
+      ],
+      "id": "1c8a5d8b-6c33-46ae-aada-b77de70249f7",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.9
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        784,
+        192
+      ],
+      "id": "18dbccdb-c74f-489c-927c-7cb4e5b46c3f",
+      "name": "Google Gemini Chat Model1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.blocks[0].elements[0].elements[1].text }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# Identidad\n\nEres un asistente de conocimiento de la empresa BlunexAI. \n\n# Objetivo\n\nTu objetivo principal es resolver a dudas relacionadas con n8n. Para ello dispones de la herramienta \"Conocimiento\" que puedes consultar cualquier duda relacionada con esto.\n\n# Herramientas:\n\n* \"Conocimiento\": utiliza esta herramienta siempre para responder a cualquier consulta.\n\n* \"Calculator\": utiliza esta herramienta para realizar cálculos matemáticos.\n\n* \"Think\": utiliza esta herramienta antes de realizar cualquier acción para mejorar tu comportamiento. También utilizará antes de dar una respuesta y así mejorarla.\n\n# Recordatorios\n* Utiliza un tono profesional, educado, y alegre.\n* Siempre utiliza tu herramienta \"Conocimiento\" para responder a cualquier consulta.\n* Fecha y hora actual: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        0
+      ],
+      "id": "b1fcdca8-57d4-44a5-833e-5da90840d2a9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "needsFallback": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Tu objetivo consiste en formatear un mensaje markdown en un formato más bonito para un usuario. Elimina todos los caracteres típicos del lenguaje markdown y adapta la respuesta a un canal de Slack.\n\nEn tu salida jamás digas que has adaptado el texto a un formato para slack. Simplemente devuelve la misma información pero en el formato especificado."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "6d288f4e-0a4f-4998-b21c-c2a6163624a0",
+      "name": "Formateador Salida"
+    },
+    {
+      "parameters": {
+        "content": "## Carga de Documentos en Base de Datos Vectorial",
+        "height": 384,
+        "width": 1760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        -480
+      ],
+      "id": "af09a2f8-75c3-40ef-9652-010b91adb9bd",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Agente IA Conocimiento Slack",
+        "height": 544,
+        "width": 1840,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -80
+      ],
+      "id": "70ec801d-5bfb-4ab5-9665-0a9c9ebaf04e",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extraer PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer PDF": {
+      "main": [
+        [
+          {
+            "node": "Borrar Documento Existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrar Documento Existente": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Conocimiento",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conocimiento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formateador Salida",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formateador Salida",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Formateador Salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formateador Salida": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "a4c5d887-2adb-44dc-97c5-d5cbeeb4013b",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-09-17T05:39:52.898Z",
+      "createdAt": "2025-09-17T05:39:52.898Z",
+      "role": "workflow:owner",
+      "workflowId": "AMIYBjtDxeFTvuh1",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
