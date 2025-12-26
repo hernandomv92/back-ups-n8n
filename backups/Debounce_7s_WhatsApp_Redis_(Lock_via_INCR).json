@@ -1,0 +1,818 @@
+{
+  "updatedAt": "2025-09-27T03:42:21.000Z",
+  "createdAt": "2025-09-26T16:32:55.156Z",
+  "id": "NMlOd7lHH2z7WlAt",
+  "name": "Debounce 7s WhatsApp Redis (Lock via INCR)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wa-in",
+        "options": {}
+      },
+      "id": "2a4831d1-402b-429a-8711-7612f986784f",
+      "name": "Incoming Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -6704,
+        736
+      ],
+      "webhookId": "d3826fec-5927-49ad-84ff-01c8f9e32fa7"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "value",
+        "key": "=conv:{{$node[\"ExtractSession\"].json.sessionId}}",
+        "options": {}
+      },
+      "id": "24c2edaa-8c62-4ebb-8f82-c7e6345cd9b7",
+      "name": "Get Conv",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -6256,
+        736
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=conv:{{$json.sessionId}}",
+        "value": "={{ JSON.stringify($json.state) }}"
+      },
+      "id": "8674f56f-1bbd-4e60-83ae-5886050e2b01",
+      "name": "Save Conv",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -5808,
+        736
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "incr",
+        "key": "=lock:{{$json.sessionId}}",
+        "expire": true
+      },
+      "id": "3e87168b-b2c1-4ec7-8a7b-be0255166aa3",
+      "name": "Acquire Lock",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -5584,
+        736
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "98d06935-0114-4d74-b727-0add4b0d9de5",
+              "leftValue": "={{ $json.value }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a974cd27-f3e2-44f7-b789-08d2f6155a3a",
+      "name": "Has Lock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 7,
+        "unit": "seconds"
+      },
+      "id": "31c5292d-65f4-4925-9370-dc6c63075ea2",
+      "name": "Wait 7s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -4912,
+        736
+      ],
+      "webhookId": "718002b7-02e9-454f-a24e-c2aef137c006"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "value",
+        "key": "=conv:{{$node[\"ExtractSession\"].json.sessionId}}",
+        "options": {}
+      },
+      "id": "f27860d7-42f8-4b14-8e40-c5dcf4923087",
+      "name": "Reload Conv",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -4688,
+        528
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "a357cc70-2022-49f2-b384-aa0ab3be6af3",
+              "leftValue": "={{$json.ready}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "140f558b-c925-4b33-923c-e53c0830dc83",
+      "name": "Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "value",
+        "key": "=conv:{{$node[\"ExtractSession\"].json.sessionId}}",
+        "options": {}
+      },
+      "id": "33403101-1f68-4302-bdf0-8d7b0322f7cf",
+      "name": "Get Conv Fresh",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2624,
+        560
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "1c981c61-173e-49b1-a12a-ae7a5bddc0d4",
+              "leftValue": "={{$json.action}}",
+              "rightValue": "continue",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "67b3dcb2-dfd2-4331-9e2a-fe5b8a98b9e8",
+      "name": "Continue?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2176,
+        560
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=conv:{{$json.sessionId}}",
+        "value": "={{ JSON.stringify($json.state) }}"
+      },
+      "id": "055bcd6e-8d98-4697-8636-fcf7b3ef6f61",
+      "name": "Save Conv (continue)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        528
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=conv:{{$json.sessionId}}",
+        "value": "={{ JSON.stringify($json.state) }}"
+      },
+      "id": "94c6348e-a4f5-4c1c-ad4b-85bc47cf399c",
+      "name": "Save Conv (finish)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        720
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=lock:{{$json.sessionId}}",
+        "value": "0"
+      },
+      "id": "4d30ae58-7f2c-4e45-b6b7-c203974749a1",
+      "name": "Release Lock",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        720
+      ],
+      "credentials": {
+        "redis": {
+          "id": "2e4l6IRo52Y9YyUH",
+          "name": "Redis account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tomamos sessionId/text/ts del nodo ExtractSession\nconst sess = $node[\"ExtractSession\"].json;\nconst sessionId = sess.sessionId;\nconst text = sess.text ?? \"\";\nconst ts = Number(sess.ts ?? Date.now());\n\n// El GET de Redis dejó su salida aquí\nlet raw = $json.value ?? null;\n\n// Reconstruimos el estado\nlet state;\ntry { state = raw ? JSON.parse(raw) : null; } catch { state = null; }\nif (!state || typeof state !== \"object\") state = { texts: [], lastTs: 0 };\n\n// Actualizamos el buffer\nif (text) state.texts.push(text);\nstate.lastTs = ts;\n\nreturn [{ sessionId, state }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6032,
+        736
+      ],
+      "id": "10e150b9-a45e-488c-b013-696c92a88ff1",
+      "name": "UpserMessage"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b1a4bcd-2402-46a8-9989-a857eda433ed",
+              "name": "sessionId",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "198f4a13-aab8-4464-94cd-54ec332cc3f6",
+              "name": "text",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "87a0e96c-b70e-47cc-a78d-79624fd4ef9c",
+              "name": "ts",
+              "value": "={{ Date.now() }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6480,
+        736
+      ],
+      "id": "c5a51525-7066-43f2-aafd-d50aef0260e9",
+      "name": "ExtractSession"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sessionId = $node[\"ExtractSession\"].json.sessionId;\nconst lockKey = `lock:${sessionId}`;\nconst val = Number($json[lockKey]) || 0;\nreturn [{ value: val, sessionId }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5360,
+        736
+      ],
+      "id": "8387dad8-4d57-436a-b716-8fb5b1e3d8cd",
+      "name": "Normalize Lock"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lee el estado más reciente del nodo \"Reload Conv\"\nlet state = null;\ntry { state = $node[\"Reload Conv\"].json.value ? JSON.parse($node[\"Reload Conv\"].json.value) : null; } catch {}\nif (!state || typeof state !== \"object\") state = { texts: [], lastTs: 0 };\n\nconst N = $node[\"CheckReady\"].json.batchLen || 0;   // cuántos mensajes hay listos\nconst texts = Array.isArray(state.texts) ? state.texts : [];\nconst reply = texts.slice(0, N).join(' ').replace(/\\s+/g, ' ').trim();\n\nreturn [{\n  sessionId: $node[\"CheckReady\"].json.sessionId,\n  cutLen: N,              // recorte que ya enviaremos\n  reply\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4016,
+        528
+      ],
+      "id": "6d718c19-3cfd-44f7-b9b9-4ef844dfcdd7",
+      "name": "BuildBatch"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Incoming Webhook').item.json.body.instance }}",
+        "remoteJid": "={{ $('PrepareAgentInput').item.json.sessionId }}",
+        "messageText": "={{ $json.reply }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -3040,
+        608
+      ],
+      "id": "c944b790-7e58-46f7-a36a-78098695f3ca",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "NmM1lUjdXQm5dFuh",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lee el buffer después de enviar\nlet state = null;\ntry { state = $json.value ? JSON.parse($json.value) : null; } catch {}\nif (!state || typeof state !== 'object') state = { texts: [], lastTs: 0 };\n\n// Datos del batch que acabamos de enviar\nconst cutLen = Number($node[\"BuildBatch\"].json.cutLen || 0);\nconst sessionId = $node[\"BuildBatch\"].json.sessionId;\n\n// ¿Entraron mensajes nuevos mientras enviábamos?\nconst currLen = Array.isArray(state.texts) ? state.texts.length : 0;\n\nlet action;\nif (currLen > cutLen) {\n  // llegaron nuevos: recortamos lo ya enviado y seguimos\n  state.texts = state.texts.slice(cutLen);\n  action = 'continue';\n} else {\n  // no llegó nada más: vaciamos y finalizamos\n  state.texts = [];\n  action = 'finish';\n}\n\nreturn [{ action, sessionId, state }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2400,
+        560
+      ],
+      "id": "97103457-a390-44f6-a9c7-aac25f097505",
+      "name": "PostSendUpdate",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let state = null;\ntry { state = $json.value ? JSON.parse($json.value) : null; } catch {}\nif (!state || typeof state !== 'object') state = { texts: [], lastTs: 0 };\n\nconst now  = Date.now();\nconst diff = now - (state.lastTs || 0);\nconst texts = Array.isArray(state.texts) ? state.texts : [];\n\nreturn [{\n  ready: diff >= 7000 && texts.length > 0, // 7s de silencio y hay algo que enviar\n  batchLen: texts.length,\n  sessionId: $node[\"ExtractSession\"].json.sessionId\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        528
+      ],
+      "id": "e69bd0e4-b753-43f6-9aeb-1f0d62c4bfc5",
+      "name": "CheckReady"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  sessionId: $node[\"BuildBatch\"].json.sessionId,\n  cutLen:    $node[\"BuildBatch\"].json.cutLen,\n  input:     $node[\"BuildBatch\"].json.reply   // lo que escribió el usuario (batch)\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3824,
+        480
+      ],
+      "id": "463edd31-0dc6-4201-8b32-c3e9915783d5",
+      "name": "PrepareAgentInput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.input }}",
+        "options": {
+          "systemMessage": "Eres el asistente de Nando, eres muy formal y das información sobre casas"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3632,
+        544
+      ],
+      "id": "a2ac68d7-737d-4ec8-ad19-8b1eff847082",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mira el panel OUTPUT del AI Agent y verifica cómo se llama el texto.\n// En muchos casos viene en `response`.\n// Ajusta aquí si tu salida se llama distinto (response, result, text, etc.).\nconst reply =\n  $json.response ??\n  $json.result ??\n  $json.text ??\n  $json.answer ??\n  $json.data?.response ?? '';\n\nreturn [{ sessionId: $json.sessionId, reply }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3312,
+        640
+      ],
+      "id": "ff9bb755-faa0-49e5-a80f-ee454cb20022",
+      "name": "MapAgentReply"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3776,
+        752
+      ],
+      "id": "43a967e9-26a2-4717-8b9a-b99cb07b27e0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "irWFR0JcxSVOFWra",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Save Conv": {
+      "main": [
+        [
+          {
+            "node": "Acquire Lock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acquire Lock": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Lock?": {
+      "main": [
+        [
+          {
+            "node": "Wait 7s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait 7s": {
+      "main": [
+        [
+          {
+            "node": "Reload Conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready?": {
+      "main": [
+        [
+          {
+            "node": "BuildBatch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 7s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Conv (continue)": {
+      "main": [
+        [
+          {
+            "node": "Wait 7s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Conv (finish)": {
+      "main": [
+        [
+          {
+            "node": "Release Lock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incoming Webhook": {
+      "main": [
+        [
+          {
+            "node": "ExtractSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conv": {
+      "main": [
+        [
+          {
+            "node": "UpserMessage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtractSession": {
+      "main": [
+        [
+          {
+            "node": "Get Conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpserMessage": {
+      "main": [
+        [
+          {
+            "node": "Save Conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Lock": {
+      "main": [
+        [
+          {
+            "node": "Has Lock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reload Conv": {
+      "main": [
+        [
+          {
+            "node": "CheckReady",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuildBatch": {
+      "main": [
+        [
+          {
+            "node": "PrepareAgentInput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        [
+          {
+            "node": "Get Conv Fresh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conv Fresh": {
+      "main": [
+        [
+          {
+            "node": "PostSendUpdate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostSendUpdate": {
+      "main": [
+        [
+          {
+            "node": "Continue?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckReady": {
+      "main": [
+        [
+          {
+            "node": "Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continue?": {
+      "main": [
+        [
+          {
+            "node": "Save Conv (continue)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Conv (finish)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareAgentInput": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "MapAgentReply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MapAgentReply": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "BuildBatch": [
+      {
+        "json": {
+          "sessionId": "154408386052315@lid",
+          "cutLen": 5,
+          "reply": "otra prueba Hola hagamos adsadasd hola"
+        }
+      }
+    ],
+    "PrepareAgentInput": [
+      {
+        "json": {
+          "sessionId": "154408386052315@lid",
+          "cutLen": 5,
+          "input": "otra prueba Hola hagamos adsadasd hola"
+        }
+      }
+    ]
+  },
+  "versionId": "c1da2112-a292-4cf2-a85b-7a5682353121",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-09-26T16:32:55.167Z",
+      "createdAt": "2025-09-26T16:32:55.167Z",
+      "role": "workflow:owner",
+      "workflowId": "NMlOd7lHH2z7WlAt",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
