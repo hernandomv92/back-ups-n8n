@@ -1,0 +1,128 @@
+{
+  "updatedAt": "2025-10-18T16:40:24.000Z",
+  "createdAt": "2025-10-18T11:44:59.526Z",
+  "id": "GFMpHoHLOzQCQOTn",
+  "name": "TEST - Webhook to Supabase",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "386dcd03-427c-4765-8c72-dd8e1338d2f2",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "test-webhook-123"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Test: Crear una work order de prueba desde webhook\nconst incomingData = $input.item.json;\n\n// Generar UUID para testing\nconst generateUUID = () => {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n};\n\n// Preparar datos para Supabase\nconst workOrderData = {\n  appfolio_id: incomingData.id || 'TEST-' + Date.now(),\n  dk_code: incomingData.dk_code || 'DK#TEST-001',\n  property_address: incomingData.address || '123 Test St, Atlanta GA 30318',\n  description: incomingData.description || 'Test work order from webhook',\n  status: 'created',\n  priority: incomingData.priority || 'medium',\n  service_type: incomingData.service_type || 'plumbing',\n  tenant_name: incomingData.tenant_name || 'Test Tenant',\n  tenant_phone: incomingData.tenant_phone || '+14045550000',\n  budget_type: 'negotiate',\n  sync_source: 'test_webhook',\n  metadata: {\n    test: true,\n    received_at: new Date().toISOString(),\n    original_payload: incomingData\n  }\n};\n\nreturn {\n  json: workOrderData\n};"
+      },
+      "id": "fde826a5-0cbb-4141-a681-92317a7dcd15",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "work_orders",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "9dfe4088-cc5e-4f8d-9fab-de30549d1c21",
+      "name": "Insert to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "7OKUk6SiXoaSfx35",
+          "name": "Supabase Hender Production"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Crear respuesta bonita\nconst inserted = $input.item.json;\n\nreturn {\n  json: {\n    success: true,\n    message: 'Work order created successfully!',\n    work_order: {\n      id: inserted.id,\n      dk_code: inserted.dk_code,\n      address: inserted.property_address,\n      status: inserted.status\n    },\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "e9217aaa-03c0-4a83-ad85-61f316ec2889",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Insert to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "0f616d70-128e-4475-997d-e9895d93ebea",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-18T11:44:59.529Z",
+      "createdAt": "2025-10-18T11:44:59.529Z",
+      "role": "workflow:owner",
+      "workflowId": "GFMpHoHLOzQCQOTn",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
