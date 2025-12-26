@@ -1,0 +1,257 @@
+{
+  "updatedAt": "2025-10-12T13:51:49.000Z",
+  "createdAt": "2025-09-28T01:46:42.335Z",
+  "id": "OnjjlKVHiatTUdEB",
+  "name": "Firecrawl Extract Template",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        512,
+        320
+      ],
+      "id": "580070a5-61a7-4bd4-a436-935f2e58d08f",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/extract",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\n    \"https://quotes.toscrape.com/*\"\n  ],\n  \"prompt\": \"Extract all quotes and their corresponding authors from the website.\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"quotes\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"text\": {\n              \"type\": \"string\"\n            },\n            \"author\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"text\",\n            \"author\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"quotes\"\n    ]\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        320
+      ],
+      "id": "878e80cd-c490-475a-a77a-324d010dacc3",
+      "name": "Extract"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff812e47-d747-4f1a-8fa8-9f3d40ec2acd",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        320
+      ],
+      "id": "64dd2b63-3f35-4b07-bd43-1d8963d40ecd",
+      "name": "If",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.firecrawl.dev/v1/extract/{{ $('Extract').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        320
+      ],
+      "id": "125035dd-5c61-43b0-9775-604b314da936",
+      "name": "Get Results"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        320
+      ],
+      "id": "bbfdbab8-8b7b-4273-a7a8-34bf070cfdb3",
+      "name": "30 Secs",
+      "webhookId": "e4866198-b806-4746-b57f-97333c497dbf"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1632,
+        448
+      ],
+      "id": "254b1cbd-96d7-4f70-b8d1-49fc0e68eb2c",
+      "name": "10 Seconds",
+      "webhookId": "6cc8c637-bafb-4d64-9cd4-8ae2a9f5b7ca"
+    },
+    {
+      "parameters": {
+        "content": "# Firecrawl Extract\n",
+        "height": 740,
+        "width": 1520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "8d0a80c6-0491-4e2e-8f78-7d70e46e93ad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1632,
+        192
+      ],
+      "id": "5f457074-4281-4987-a9fd-db68d1cee0e8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "# 🚀 Setup Guide  \n**Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\n---\n\n## 🔥 Firecrawl Setup  \n- **[Get 10% Off Firecrawl](https://firecrawl.link/nateherk)**  \n- Set up your **Firecrawl API credential** in `n8n` under **Credentials > HTTP Request**  \n- In your workflow, configure the **URL** or a **List of URLs** you want to extract content from\n\n---\n\n## 🧑‍💻 Self-Hosting?\nIf you're self-hosting n8n, you can use the Firecrawl **Community Node**:  \n👉 [n8n Firecrawl Community Node](https://www.npmjs.com/package/n8n-nodes-firecrawl?activeTab=readme)\n\n---\n\n✅ Once set up, Firecrawl will intelligently extract relevant content from the provided pages based on your workflow logic.\n",
+        "height": 740,
+        "width": 340
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "2b8d39ba-d3ad-43b5-835e-977f5f297c01",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "30 Secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "10 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Results": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30 Secs": {
+      "main": [
+        [
+          {
+            "node": "Get Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "8efbac7f-88b2-458d-9972-d0fc3b87e752",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-09-28T01:46:42.338Z",
+      "createdAt": "2025-09-28T01:46:42.338Z",
+      "role": "workflow:owner",
+      "workflowId": "OnjjlKVHiatTUdEB",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
