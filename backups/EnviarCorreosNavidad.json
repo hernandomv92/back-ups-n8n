@@ -1,0 +1,330 @@
+{
+  "updatedAt": "2025-12-23T13:18:21.000Z",
+  "createdAt": "2025-12-22T20:38:08.720Z",
+  "id": "Sa6uCvgxw2u2mFc1",
+  "name": "EnviarCorreosNavidad",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "c4e5bd9c-619d-40f1-bee4-bd06c2dcdfcd",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fromEmail": "biologix@info.biologix.com.co",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.asunto }}",
+        "html": "={{ $json.correo }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1376,
+        160
+      ],
+      "id": "48ca995a-da1f-486c-9ffe-3d1062a7eb75",
+      "name": "Send email",
+      "webhookId": "07a403e6-07d2-4a12-a515-8cabed68fe9d",
+      "credentials": {
+        "smtp": {
+          "id": "wghuliT5xKr1Ecpj",
+          "name": "EnviarCorreoInfo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858l-tmdf4_GEpEFO_o0JIjIofE8Hb2yOZnT8A0K3sQ",
+          "mode": "list",
+          "cachedResultName": "Base_Biologix_HojaMaestra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858l-tmdf4_GEpEFO_o0JIjIofE8Hb2yOZnT8A0K3sQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1248831842,
+          "mode": "list",
+          "cachedResultName": "ListaCorreosNavidad",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858l-tmdf4_GEpEFO_o0JIjIofE8Hb2yOZnT8A0K3sQ/edit#gid=1248831842"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        0
+      ],
+      "id": "6f5283b8-a28f-44c0-9315-c3ed48d2de5b",
+      "name": "ObtenerCorreos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q9BiFk1jb8vysXoJ",
+          "name": "GeorgiaSheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "58b2e34c-57bd-4955-993f-f2ea95e62382",
+              "leftValue": "={{ $json.Activo }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "cb5f3b2e-4aec-4a7b-bf02-97ac7c7913a3",
+              "leftValue": "={{ $json.estado_envio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        0
+      ],
+      "id": "acfb21c2-83cd-42f0-b75f-20896e9bd26b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ed61317-c4ff-4cd5-88b2-39b26397ea6d",
+              "name": "asunto",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "7ce22a61-f842-4863-bf4b-d9d33075bf31",
+              "name": "correo",
+              "value": "={{ $json.html }}",
+              "type": "string"
+            },
+            {
+              "id": "2906d01d-72bc-40c5-ac0b-24cadc65a602",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "c5d67799-a467-4380-967c-9963607cc316",
+              "name": "empresa",
+              "value": "={{ $json.empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "c2edbb7e-04fd-496a-b491-0a6bf1e7b62a",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -48
+      ],
+      "id": "11431c4c-c630-400f-a138-aa5ed09d2fd1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "18ea8257-0b4c-42e2-abdc-360b92ba7770",
+      "name": "Loop Over Items1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const empresa = $json.empresa?.trim();\n\nconst saludo = empresa\n  ? `Estimados equipo de <strong>${empresa}</strong>,`\n  : `Estimados,`;\n\nconst subject = \"Felices fiestas | Biologix Colombia\";\n\nconst html = `\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Felices Fiestas - Biologix</title>\n</head>\n<body style=\"margin:0; padding:0; background-color:#f4f6f5; font-family:Arial, Helvetica, sans-serif;\">\n\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding:20px 0;\">\n    <tr>\n      <td align=\"center\">\n\n        <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#ffffff; border:1px solid #dddddd;\">\n\n          <!-- Header -->\n          <tr>\n            <td style=\"background:#1f6f4a; color:#ffffff; padding:18px 24px;\">\n              <strong style=\"font-size:16px;\">BIOLOGIX COLOMBIA S.A.S</strong><br>\n              <span style=\"font-size:12px;\">Comprometidos con la agricultura sostenible y el desarrollo de productos bioracionales para el manejo integrado de las plagas.</span>\n            </td>\n          </tr>\n\n          <!-- Body -->\n          <tr>\n            <td style=\"padding:24px; color:#333333; font-size:14px; line-height:1.6;\">\n              \n              <p>${saludo}</p>\n\n              <p>\n                En estos días especiales queremos continuar apoyando el trabajo y la dedicación del equipo técnico \nquienes con su compromiso hacen posible el desarrollo y cuidado de sus cultivos.\n              </p>\n\n              <p>\n                Agradecemos la confianza depositada en <strong>Biologix Colombia S.A.S</strong>\n              </p>\n\n              <p>\n                Les deseamos una <strong>Feliz Navidad</strong> y un <strong>próspero Año Nuevo</strong>,\n                lleno de salud, éxitos y nuevos proyectos.\n              </p>\n\n              <p style=\"margin-top:30px;\">\n                Reciban un cordial saludo,<br>\n                <strong>Equipo Biologix Colombia</strong>\n              </p>\n\n            </td>\n          </tr>\n\n          <!-- Footer -->\n          <tr>\n            <td style=\"background:#f0f0f0; padding:14px 24px; font-size:11px; color:#666666;\">\n              📍 Bogotá, Colombia<br>\n              📧 marthagg@biologix.com.co &nbsp;|&nbsp; 📞 320 280 6331\n              📧 marcela@biologix.com.co &nbsp;|&nbsp; 📞 300 2285784\n            </td>\n          </tr>\n\n        </table>\n\n      </td>\n    </tr>\n  </table>\n\n</body>\n</html>\n`;\n\nreturn [\n  {\n    json: {\n      ...$json,\n      subject,\n      html\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        128
+      ],
+      "id": "a8adaa0a-cb5a-42ac-99cf-c3704350cdfd",
+      "name": "ConstruirHTML_Navidad"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        592,
+        -32
+      ],
+      "id": "2bf35a0c-4498-4ad7-9e11-be4b3bce63c2",
+      "name": "Loop Over Items"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "ObtenerCorreos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ObtenerCorreos": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ConstruirHTML_Navidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirHTML_Navidad": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e991710a-8b0a-42b3-be7b-ae726a5cf1ef",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-22T20:38:08.727Z",
+      "createdAt": "2025-12-22T20:38:08.727Z",
+      "role": "workflow:owner",
+      "workflowId": "Sa6uCvgxw2u2mFc1",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
