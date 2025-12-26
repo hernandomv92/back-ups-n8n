@@ -1,0 +1,386 @@
+{
+  "updatedAt": "2025-10-21T01:03:24.000Z",
+  "createdAt": "2025-10-20T02:22:31.224Z",
+  "id": "1GSyan4kAdnYYUt7",
+  "name": "ConstruirFacturasJhona-MédicoWarzone",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_YW5w63osshDcfecIDHDNa0O5uQ1_YEUQrhf5jwLQX4",
+          "mode": "list",
+          "cachedResultName": "Catálogo_Precios_Trabajos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_YW5w63osshDcfecIDHDNa0O5uQ1_YEUQrhf5jwLQX4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "precios",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_YW5w63osshDcfecIDHDNa0O5uQ1_YEUQrhf5jwLQX4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        208
+      ],
+      "id": "edd65e35-2718-49f4-b174-cff0f18fd73d",
+      "name": "Base de Datos de precios xTrabajo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NI3t90GmXQIkFt1q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// items: el array de tus objetos mezclados (productos, cliente, etc.)\nconst items = $input.all();\n\nlet customerName = \"\";\nlet customerEmail = \"\";\nlet customerAddress = \"\";\n\nlet invoiceItems = [];\nlet total = 0;\n\n// Iterar y separar\nitems.forEach(item => {\n  const obj = item.json;\n  // Si es cliente, toma sus datos\n  if (obj.Cliente) {\n    customerName = obj.Cliente;\n    // customerEmail = obj.email || \"\"; // Si lo tienes\n    // customerAddress = obj.address || \"\"; // Si lo tienes\n  } \n  // Sino, es producto (puedes afinar el if según tu estructura)\n  if (obj.task_label && obj.price_unit) {\n    const price = parseFloat(obj.price_unit) || 0;\n    const quantity = parseFloat(obj.unit) || 1;\n    invoiceItems.push({\n      name: obj.task_label,\n      quantity,\n      unitPrice: price\n    });\n    total += price * quantity;\n  }\n});\n\n// Construir JSON resultado para PDFMonkey\nreturn [\n  {\n    json: {\n      company: {\n        name: \"Lumora Partner\",\n        adress: \"Carrera 19#3a-54\",\n        logo: \"https://drive.google.com/file/d/1ds_0CmkMZXp5XgXyZx6__juKsDbknwdA/view\"\n      },\n      customer: {\n        name: customerName,\n        // email: customerEmail,\n        // address: customerAddress\n      },\n      products: invoiceItems,\n      invoice: {\n        totalWithoutVat: total\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        32
+      ],
+      "id": "b870d8cd-5b3b-4e8f-a4ae-e747dbb0e065",
+      "name": "Emparejamos"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    company: {\n      name: $json.company.name,\n      adress: $json.company.adress,\n      logo: $json.company.logo\n    },\n    customer: {\n      name: $json.customer.name\n      // address: $json.customer.address,\n      // email: $json.customer.email\n    },\n    products: $json.products.map(item => ({\n      name: item.name,\n      quantity: item.quantity,\n      unitPrice: item.unitPrice\n    })),\n    invoice: {\n      totalWithoutVat: $json.invoice.totalWithoutVat\n    }\n  }\n}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        32
+      ],
+      "id": "97504827-6b04-44a3-a2a2-94bb878f5832",
+      "name": "ConstruirmosPayload"
+    },
+    {
+      "parameters": {
+        "documentTemplateId": "F5187673-FE05-4EB8-9B0C-D820A9484452",
+        "payload": "={{$json}}"
+      },
+      "type": "n8n-nodes-pdfmonkey.pdfMonkey",
+      "typeVersion": 1,
+      "position": [
+        768,
+        32
+      ],
+      "id": "74dc46d8-19e7-4d95-86d9-281730dc158c",
+      "name": "GeneramosPDF",
+      "credentials": {
+        "pdfMonkeyApi": {
+          "id": "jjmjuQPfIOySZOz5",
+          "name": "PDFMonkey account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        32
+      ],
+      "id": "b0e17779-99a0-45c0-9bc1-9720f4701da4",
+      "name": "MensajeRecibido",
+      "webhookId": "60aeb8bb-2545-4702-970d-961a1012d575"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc626d11-b9c5-4e8b-b6fa-e1146c9edf5c",
+              "name": "orderNumber",
+              "value": "={{ $json.orderNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "1bbf5fe1-a886-412f-a452-ade2d231b67b",
+              "name": "task",
+              "value": "={{ $json.rawText }}",
+              "type": "string"
+            },
+            {
+              "id": "a01ec244-f372-479e-8db6-22b285e5e403",
+              "name": "Cliente",
+              "value": "Hernando Morales",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        32
+      ],
+      "id": "cb4f6a27-be43-4fd9-ab89-6c50690ad740",
+      "name": "ExtraerInfo"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        32
+      ],
+      "id": "e2f942cd-8e18-4e99-a6d4-638b5f9fbff3",
+      "name": "UnirPreciosTrabajos"
+    },
+    {
+      "parameters": {
+        "sendTo": "hernandomv@gmail.com",
+        "subject": "Factura Número: 1235-2",
+        "message": "Factura por servicios prestados.",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        32
+      ],
+      "id": "7fc103f9-775c-4bb9-b851-61f34c5796bb",
+      "name": "Send a message",
+      "webhookId": "347dc5f7-e6cd-405d-8c0b-f7691c5e2868",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Eot0bu4gMEB5HIkf",
+          "name": "Gmail mE"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  // ✔️ Toma el texto del campo correcto (camelCase o lowercase) y otras variantes comunes\n  let text = item.json.chatInput ?? item.json.chatinput ?? item.json.message ?? item.json.text ?? \"\";\n\n  // Si quieres ver exactamente qué llega:\n  // console.log('RAW:', text);\n\n  // 🧽 Normaliza saltos de línea: maneja \\\\n (doble escape), \\n (escape) y CR\n  text = String(text)\n    .replace(/\\\\\\\\n/g, '\\n')   // \\\\n -> \\n\n    .replace(/\\\\n/g, '\\n')     // \\n  -> salto real\n    .replace(/\\r/g, '');\n\n  // 🧠 Extrae número de orden (tolerante a espacios y may/min)\n  const orderMatch = text.match(/orden\\s*de\\s*trabajo\\s*:\\s*([A-Za-z0-9-]+)/i);\n  const orderNumber = orderMatch ? orderMatch[1].trim() : null;\n\n  // 🧠 Extrae descripción (con/sin acento)\n  const descMatch = text.match(/descripci[oó]n\\s*:\\s*([\\s\\S]*)/i);\n  let description = descMatch ? descMatch[1].trim() : null;\n\n  // 🧩 Divide en tareas (por líneas)\n  let tasks = [];\n  if (description) {\n    tasks = description\n      .split(/\\n+/)\n      .map(t => t.trim())\n      .filter(Boolean);\n  }\n\n  if (tasks.length > 0) {\n    for (const task of tasks) {\n      results.push({\n        json: {\n          orderNumber,\n          task,\n          description,\n          rawText: text,\n          parseOk: true\n        }\n      });\n    }\n  } else {\n    results.push({\n      json: {\n        orderNumber,\n        description,\n        rawText: text,\n        parseOk: false,\n        error: \"No se pudo extraer correctamente\"\n      }\n    });\n  }\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        32
+      ],
+      "id": "af193528-0667-44aa-872b-cc56ef55428d",
+      "name": "OrganizaOrdenDeTrabajo"
+    },
+    {
+      "parameters": {
+        "content": "## Aquí recibimos nuestro mensaje con la info\n### Recibimos mensaje, puede ser de texto, whatsapp o telegram o un correo. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n### Organizamos la información que proviene del mensaje.",
+        "height": 480,
+        "width": 496,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -784,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "eb6922d3-873c-4fba-be11-c7057ffa7384",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 3 Nodos que se encargan:\n\n### Obtener info de cada trabajo realizado y separarlo.\nLeer una base de datos donde se encuentran los precios. \nY unir está información. ",
+        "height": 560,
+        "width": 560,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "313335b5-6e1a-4b6d-b944-e9ea328c02d8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Emparejamos:\n### Nuestra función va a buscar los precios de los trabajos y va a hacer match con la descripción que vienen en el mensaje. Luego construye un archivo completo para generar el pdf.",
+        "height": 560,
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "f08635d5-1c7f-4333-bb01-e60553ae613d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Generamos Factura",
+        "height": 400,
+        "width": 192,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "19862f11-7591-42d0-93fa-f958fcfeb9b3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Enviamos por correo",
+        "height": 432,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "01df0a4b-a831-4baf-b085-e28d6d7911b6",
+      "name": "Sticky Note4"
+    }
+  ],
+  "connections": {
+    "Base de Datos de precios xTrabajo": {
+      "main": [
+        [
+          {
+            "node": "UnirPreciosTrabajos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Emparejamos": {
+      "main": [
+        [
+          {
+            "node": "ConstruirmosPayload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConstruirmosPayload": {
+      "main": [
+        [
+          {
+            "node": "GeneramosPDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MensajeRecibido": {
+      "main": [
+        [
+          {
+            "node": "OrganizaOrdenDeTrabajo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ExtraerInfo": {
+      "main": [
+        [
+          {
+            "node": "Base de Datos de precios xTrabajo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UnirPreciosTrabajos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UnirPreciosTrabajos": {
+      "main": [
+        [
+          {
+            "node": "Emparejamos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GeneramosPDF": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OrganizaOrdenDeTrabajo": {
+      "main": [
+        [
+          {
+            "node": "ExtraerInfo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "309d9825-d1d7-4c76-92c8-65b4f73f02c3",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-10-20T02:22:31.232Z",
+      "createdAt": "2025-10-20T02:22:31.232Z",
+      "role": "workflow:owner",
+      "workflowId": "1GSyan4kAdnYYUt7",
+      "projectId": "NG1eJxP2IbDu00JT"
+    }
+  ],
+  "tags": []
+}
